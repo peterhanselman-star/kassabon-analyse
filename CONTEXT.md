@@ -2,7 +2,7 @@
 - Aparte app (naar analogie van Hapje/Drankje) om kassabonnen vast te leggen, te controleren en via WhatsApp te versturen.
   Stap 1 van het plan: vastleggen. Stap 3 (prijzen vergelijken) komt later; de data is daar al op ingericht.
 - Hosting: https://peterhanselman-star.github.io/kassabon-analyse/ (alleen relatieve paden, geen tracking).
-- Eén bestand index.html; manifest.json, apple-touch-icon.png (180), icon-192.png, icon-512.png (witte bon met € en loep op teal #00695c).
+- Eén bestand index.html; manifest.json, apple-touch-icon-v2.png (180), icon-192-v2.png, icon-512-v2.png (witte bon met € en loep op bordeauxrood #7B1E2B; oude teal-plaatjes blijven staan).
 
 ## v1 (10 nov 2026, index-v1.html = huidige index.html) — marker: const APP_VERSION = '1'
 - Tabs onder: Bonnen (lijst, nieuwste eerst), Nieuw (foto/PDF of zelf invullen), Versturen (per periode), Meer
@@ -44,3 +44,7 @@
 - ptest.js parser 25/25; e2e1.js 214/214 (invoer, samenvoegen/splitsen, pinbon, delen, perioden, back-up, undo,
   lettergrootte, geen horizontale overloop op 375/390 bij alle 5 groottes, knoppen ≥44px); e2e_ocr.js 30/30.
 - Bron: kb-tools/src/p1.html p2.html p3.js p4.js p5.js + src/parser.js → build.py → index.html.
+
+## v2 (10 nov 2026, index-v2.html = huidige index.html) — marker: const APP_VERSION = '2'
+- Alleen de achtergrond van het beginschermplaatje is bordeauxrood (#7B1E2B); bon, regels, teal € en gele loep ongewijzigd. Kleuren in de app zelf (theme_color, CSS) zijn ongewijzigd.
+- Nieuwe bestandsnamen vanwege iOS-cache: apple-touch-icon-v2.png, icon-192-v2.png, icon-512-v2.png.
