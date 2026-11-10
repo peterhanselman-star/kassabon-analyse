@@ -1,0 +1,1479 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Kassabon">
+<meta name="theme-color" content="#00695c">
+<meta http-equiv="Cache-Control" content="no-cache">
+<title>Kassabon Analyse</title>
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<script>(function(){try{var s=localStorage.getItem('kassabonTextSize');if(['klein2','klein','extra','enorm'].indexOf(s)>=0)document.documentElement.className='ts-'+s;}catch(e){}})();</script>
+<style>
+  /* Alles in rem; lettergrootte op <html>: 16 / 19 / 22 (normaal) / 25 / 28 px */
+  html { font-size: 22px; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; scroll-padding-top: 5rem; scroll-padding-bottom: 6rem; }
+  html.ts-klein2 { font-size: 16px; }
+  html.ts-klein { font-size: 19px; }
+  html.ts-extra { font-size: 25px; }
+  html.ts-enorm { font-size: 28px; }
+  html.ts-enorm body { -webkit-hyphens: auto; hyphens: auto; overflow-wrap: break-word; }
+  html.ts-klein button, html.ts-klein2 button { min-height: 44px; }
+  html.ts-klein .del-btn, html.ts-klein2 .del-btn, html.ts-klein .ts-btn, html.ts-klein2 .ts-btn { min-width: 44px; min-height: 44px; }
+  html.ts-klein input, html.ts-klein2 input { min-height: 44px; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background: #edf1f0; color: #111;
+    font-size: 1rem; line-height: 1.35; padding-bottom: calc(5.2rem + env(safe-area-inset-bottom));
+    padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); overflow-x: hidden; }
+  button, input, select { font-family: inherit; }
+  .topbar { position: sticky; top: 0; z-index: 100; background: #00695c; color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    padding: calc(0.35rem + env(safe-area-inset-top)) min(0.55rem, 3.5vw) 0.35rem; }
+  .header-row { display: flex; align-items: center; justify-content: space-between; gap: 0.2rem 0.35rem; flex-wrap: wrap; }
+  .topbar h1 { margin: 0; font-size: min(0.95rem, 6vw); font-weight: 800; }
+  .ts-btns { display: flex; align-items: center; gap: 0.3rem; margin-left: auto; }
+  .ts-label { font-size: min(0.8rem, 5vw); font-weight: 700; }
+  .ts-btn { min-width: min(2.5rem, 60px); height: min(2.5rem, 60px); border-radius: 0.6rem; border: 2px solid rgba(255,255,255,0.85); background: rgba(255,255,255,0.15); color: #fff; font-size: min(0.9rem, 6vw); font-weight: 800; padding: 0 0.3rem; }
+  .ts-btn:disabled { opacity: 0.4; }
+  .tabs { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 100; background: #fff; border-top: 2px solid #c8ccd4;
+    padding-bottom: env(safe-area-inset-bottom); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); box-shadow: 0 -2px 8px rgba(0,0,0,0.08); }
+  .tab { flex: 1 1 0; min-width: 0; min-height: 4rem; padding: 0.3rem 0.1rem 0.35rem; text-align: center; font-size: min(0.8rem, 4.4vw); font-weight: 800; background: none; border: none; color: #333; line-height: 1.1; white-space: nowrap; overflow: hidden; }
+  .tab .ic { display: block; font-size: min(1.25rem, 32px); line-height: 1.15; margin-bottom: 0.1rem; }
+  .tab.active { color: #004d40; background: #e0f2ef; box-shadow: inset 0 4px 0 #00695c; }
+  .content { padding: 0.5rem; max-width: 820px; margin: 0 auto; }
+  .card { background: #fff; border-radius: 0.75rem; padding: 0.75rem; margin-bottom: 0.6rem; box-shadow: 0 1px 6px rgba(0,0,0,0.1); }
+  .big-button { display: block; width: 100%; min-height: 2.6rem; padding: 0.6rem 0.7rem; font-size: 1.05rem; font-weight: 800; border: none; border-radius: 0.6rem;
+    background: #00695c; color: #fff; margin-bottom: 0.5rem; line-height: 1.2; text-align: center; }
+  .big-button.secondary { background: #e4e7ec; color: #111; }
+  .big-button.huge { padding: 1rem 0.7rem; font-size: 1.15rem; }
+  .big-button.danger { background: #fde8e7; color: #b3261e; border: 2px solid #b3261e; }
+  .big-button.share-wa { background: #1e8e3e; }
+  .big-button:active { opacity: 0.75; }
+  .big-button:disabled { opacity: 0.5; }
+  .link-button { background: none; border: none; color: #00695c; font-size: 1rem; font-weight: 800; padding: 0.55rem 0.2rem; min-height: 2.4rem; text-decoration: underline; text-align: left; }
+  input, select { width: 100%; min-height: 2.5rem; padding: 0.4rem 0.55rem; font-size: 1.05rem; border: 2px solid #8a8f98; border-radius: 0.5rem; background: #fff; -webkit-appearance: none; appearance: none; color: #111; margin: 0; }
+  input[type=date] { min-width: 0; display: block; }
+  input::placeholder { color: #6b6f76; }
+  input:focus { outline: none; border-color: #00695c; box-shadow: 0 0 0 3px rgba(0,105,92,0.25); }
+  label { display: block; }
+  .fld-label { display: block; font-weight: 800; font-size: 0.9rem; margin: 0.3rem 0 0.15rem; }
+  .small-text { font-size: 0.9rem; color: #333; }
+  .section-title { font-size: 1.2rem; font-weight: 800; margin: 0.1rem 0 0.5rem; }
+  .hidden { display: none !important; }
+  .tip { font-size: 1.05rem; line-height: 1.35; background: #e0f2ef; border-left: 5px solid #00695c; border-radius: 0.4rem; padding: 0.45rem 0.6rem; margin: 0 0 0.7rem; }
+  .note { border-radius: 0.5rem; padding: 0.5rem 0.6rem; font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; line-height: 1.35; overflow-wrap: anywhere; }
+  .note.info { background: #e8f0fe; border: 2px solid #0b57d0; color: #0b3d91; }
+  .note.warn { background: #fff4d6; border: 2px solid #c58a00; color: #5c3d00; }
+  .note.ok { background: #e6f4ea; border: 2px solid #188038; color: #0d652d; }
+  .note.bad { background: #fde8e7; border: 2px solid #b3261e; color: #8c1d18; }
+  .progress { height: 0.6rem; background: #d5d8de; border-radius: 0.3rem; overflow: hidden; margin: 0.5rem 0 0.3rem; }
+  .progress > div { height: 100%; width: 0; background: #00695c; transition: width 0.3s; }
+  .bill-row { display: flex; align-items: stretch; gap: 0.4rem; border-bottom: 2px solid #e3e5ea; }
+  .bill-row:last-child { border-bottom: none; }
+  .bill-item { flex: 1; min-width: 0; text-align: left; background: none; border: none; padding: 0.55rem 0.1rem; font-size: 1rem; color: #111; min-height: 2.8rem; }
+  .bi-top { display: flex; justify-content: space-between; gap: 0.4rem; align-items: baseline; flex-wrap: wrap; }
+  .bi-name { font-weight: 800; font-size: 1.08rem; overflow-wrap: anywhere; min-width: 0; }
+  .bi-total { font-weight: 800; font-size: 1.1rem; white-space: nowrap; margin-left: auto; }
+  .bi-sub { font-size: 0.9rem; color: #333; }
+  .month-head { font-weight: 800; font-size: min(0.95rem, 7vw); text-transform: uppercase; letter-spacing: 0.4px; color: #004d40; margin: 0.6rem 0.1rem 0.2rem; }
+  .del-btn { flex: 0 0 auto; width: 2.5rem; min-height: 2.5rem; align-self: center; border: 2px solid #b3261e; border-radius: 0.5rem; background: #fde8e7; color: #b3261e; font-size: 1.05rem; font-weight: 800; padding: 0; }
+  .bill-head { font-size: 1.25rem; font-weight: 800; overflow-wrap: anywhere; }
+  .badge { display: inline-block; background: #00695c; color: #fff; padding: 0.1rem 0.5rem; border-radius: 0.6rem; font-size: 0.85rem; font-weight: 800; }
+  .bl { padding: 0.45rem 0; border-bottom: 2px solid #e3e5ea; }
+  .bl:last-child { border-bottom: none; }
+  .bl-name { font-weight: 800; font-size: 1.05rem; overflow-wrap: anywhere; }
+  .bl-calc { display: flex; justify-content: space-between; gap: 0.4rem; flex-wrap: wrap; align-items: baseline; }
+  .bl-calc .amt { font-weight: 800; white-space: nowrap; margin-left: auto; }
+  .cmp { display: inline-block; background: #eef4ff; color: #0b3d91; border: 1px solid #9db7e8; border-radius: 0.45rem; padding: 0 0.35rem; font-size: 0.9rem; font-weight: 800; white-space: nowrap; }
+  .flag { color: #8c4a00; font-size: 0.9rem; font-weight: 700; }
+  .sum-row { display: flex; justify-content: space-between; gap: 0.4rem; flex-wrap: wrap; padding: 0.3rem 0; font-size: 1rem; }
+  .grand { display: flex; justify-content: space-between; gap: 0.4rem; flex-wrap: wrap; font-size: 1.3rem; font-weight: 800; padding: 0.5rem 0 0.3rem; border-top: 3px solid #111; margin-top: 0.3rem; }
+  .ln { border: 2px solid #d5dbe5; border-radius: 0.6rem; padding: 0.45rem; margin-bottom: 0.5rem; background: #fafbfd; }
+  .ln.blank { border-style: dashed; background: #fff; }
+  .ln-top { display: flex; gap: 0.4rem; align-items: center; }
+  .ln-top input { flex: 1; min-width: 0; font-weight: 800; }
+  .ln-nums { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.35rem; align-items: flex-end; }
+  .ln-nums > label { flex: 1 1 4.6rem; min-width: 0; }
+  .ln-nums > label span { display: block; font-size: 0.8rem; font-weight: 800; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ln-nums input { text-align: right; padding-left: 0.3rem; padding-right: 0.35rem; }
+  .ln-nums input[data-f=total] { font-weight: 800; }
+  .pills { display: inline-flex; flex-wrap: wrap; gap: 0.25rem; }
+  .pills button { min-height: max(44px, 2.3rem); min-width: max(44px, 2.6rem); padding: 0.1rem 0.45rem; border: 2px solid #8a8f98; background: #fff; border-radius: 0.5rem; font-size: 0.95rem; font-weight: 800; color: #222; }
+  .pills button.on { border-color: #00695c; background: #00695c; color: #fff; }
+  .ln-unit { flex: 0 0 auto; }
+  .ln-pkg { margin-top: 0.35rem; }
+  .ln-pkg summary { font-size: 0.9rem; font-weight: 800; color: #00695c; min-height: 2.2rem; padding: 0.3rem 0; cursor: pointer; }
+  .pkg-row { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; margin-top: 0.2rem; }
+  .pkg-row input { flex: 0 1 6rem; min-width: 4rem; width: 6rem; text-align: right; }
+  .ln-out { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.3rem; margin-top: 0.25rem; align-items: center; }
+  .ocr-img { display: block; max-width: 100%; max-height: 45vh; margin: 0 auto 0.4rem; border-radius: 0.4rem; border: 1px solid #aaa; }
+  .check { font-weight: 800; }
+  .viewer { position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,0.92); display: flex; flex-direction: column; }
+  .viewer img { flex: 1; min-height: 0; object-fit: contain; width: 100%; }
+  .viewer .big-button { margin: 0.5rem; width: auto; }
+  .toast { position: fixed; left: 50%; bottom: calc(5rem + env(safe-area-inset-bottom)); transform: translateX(-50%); background: rgba(17,17,17,0.94); color: #fff;
+    padding: 0.6rem 0.9rem; border-radius: 0.7rem; font-size: 1rem; font-weight: 800; z-index: 250; width: max-content; max-width: 92%; text-align: center; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+  .undo-bar { position: fixed; left: 0.5rem; right: 0.5rem; bottom: calc(4.6rem + env(safe-area-inset-bottom)); z-index: 240; background: #111; color: #fff; border-radius: 0.7rem;
+    padding: 0.5rem 0.6rem; display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; justify-content: space-between; font-weight: 700; }
+  .undo-bar span { min-width: 0; overflow-wrap: anywhere; flex: 1 1 10rem; }
+  .undo-bar button { min-height: 2.5rem; background: #fff; color: #111; border: none; border-radius: 0.5rem; font-weight: 800; font-size: 1rem; padding: 0.2rem 0.7rem; }
+  .ask { position: fixed; inset: 0; z-index: 280; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; padding: 0.7rem; }
+  .ask .card { max-width: 30rem; width: 100%; max-height: 90vh; overflow-y: auto; }
+  .seg { display: flex; flex-wrap: wrap; background: #e4e7ec; border-radius: 0.6rem; padding: 0.2rem; margin-bottom: 0.6rem; gap: 0.2rem; }
+  .seg button { flex: 1 1 7rem; border: none; background: none; min-height: 2.5rem; padding: 0.35rem 0.3rem; font-size: 1rem; font-weight: 800; border-radius: 0.45rem; color: #222; }
+  .seg button.on { background: #fff; color: #004d40; box-shadow: inset 0 0 0 3px #00695c; }
+  .two { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .two > label { flex: 1 1 9rem; min-width: 0; }
+  pre.share-text { white-space: pre-wrap; overflow-wrap: anywhere; font-family: inherit; font-size: 0.9rem; background: #f4f6f8; border-radius: 0.5rem; padding: 0.5rem; margin: 0.3rem 0 0; }
+  details > summary { font-weight: 800; min-height: 2.4rem; padding: 0.4rem 0; cursor: pointer; }
+  .pick-bill { display: block; width: 100%; text-align: left; background: #f4f7f6; border: 2px solid #9fbfb9; border-radius: 0.6rem; padding: 0.5rem 0.6rem; margin-bottom: 0.4rem; font-size: 1rem; min-height: 2.8rem; color: #111; overflow-wrap: anywhere; }
+  .pick-bill.on { border-color: #00695c; background: #e0f2ef; box-shadow: inset 0 0 0 2px #00695c; }
+  ol { padding-left: 1.4rem; margin: 0.3rem 0; }
+  #tab-bonnen, #tab-meer, #tab-bon, #tab-edit { padding-bottom: 4rem; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="header-row">
+    <h1>🧾 Kassabon Analyse</h1>
+    <div class="ts-btns" role="group" aria-label="Lettergrootte">
+      <span class="ts-label" aria-hidden="true">Letters</span>
+      <button type="button" class="ts-btn" id="tsMinus" onclick="changeTextSize(-1)" aria-label="Kleinere letters">A−</button>
+      <button type="button" class="ts-btn" id="tsPlus" onclick="changeTextSize(1)" aria-label="Grotere letters">A+</button>
+    </div>
+  </div>
+</div>
+<div class="content">
+  <div class="card hidden" id="updateBar">
+    <div class="section-title">Er is een nieuwe versie</div>
+    <button class="big-button" onclick="applyUpdate()">Nu vernieuwen</button>
+  </div>
+
+  <div id="tab-bonnen">
+    <div class="card hidden" id="installHint">
+      <div class="section-title">📱 Als plaatje op je beginscherm</div>
+      <p style="margin:0.2rem 0;">Dan open je Kassabon Analyse met één tik, net als een gewone app.</p>
+      <p style="margin:0.4rem 0 0;"><b>iPhone of iPad (Safari):</b></p>
+      <ol>
+        <li>Tik op de <b>deelknop</b> (vierkantje met pijl omhoog ⬆). Zie je hem niet? Tik eerst op <b>•••</b>.</li>
+        <li>Kies <b>‘Zet op beginscherm’</b> en tik op <b>‘Voeg toe’</b>.</li>
+      </ol>
+      <p style="margin:0.4rem 0 0;"><b>Chrome:</b></p>
+      <ol>
+        <li>iPhone: tik op de <b>deelknop</b> rechts in de adresbalk. Android: tik op <b>⋮</b> rechtsboven.</li>
+        <li>Kies <b>‘Zet op beginscherm’</b> of <b>‘Toevoegen aan startscherm’</b>.</li>
+      </ol>
+      <p class="small-text">Let op: wat je in de browser invoert, zie je niet in het plaatje (de telefoon bewaart dat apart). Gebruik daarna dus steeds het plaatje.</p>
+      <button class="big-button" onclick="dismissInstallHint()">Begrepen</button>
+    </div>
+    <div class="card">
+      <button class="big-button huge" id="homePickBtn" onclick="pickReceipt()">📷 Foto of PDF van een bon</button>
+      <button class="big-button secondary" id="homeManualBtn" onclick="startManual()">✍️ Bon zelf invullen (bijv. markt)</button>
+    </div>
+    <div class="card">
+      <div class="section-title">Mijn bonnen</div>
+      <p class="small-text" id="listIntro" style="margin-top:0;">Tik op een bon om hem te bekijken. Tik op ✕ om hem te wissen.</p>
+      <div id="billList"></div>
+    </div>
+  </div>
+
+  <div id="tab-nieuw" class="hidden">
+    <div class="card">
+      <div class="section-title">Nieuwe bon</div>
+      <p class="tip" id="photoTip">💡 Fotografeer één bon per foto, recht van boven, goed licht.</p>
+      <input type="file" id="receiptInput" accept="image/*,application/pdf,.pdf" multiple style="display:none;" onchange="handleReceiptFiles(this)">
+      <button class="big-button huge" id="pickBtn" onclick="pickReceipt()">📷 Foto of PDF van een bon kiezen</button>
+      <div id="ocrBox" class="hidden" role="status">
+        <div style="font-weight:800;" id="ocrStatus">Bezig…</div>
+        <div class="progress"><div id="ocrBar"></div></div>
+        <div class="small-text">De eerste keer worden taalgegevens gedownload (internet nodig). Dat kan even duren.</div>
+      </div>
+      <p class="small-text">Daarna kun je alles controleren en aanpassen. Liggen er meer bonnen op één foto, dan probeert de app ze apart te lezen.</p>
+      <button class="big-button secondary" id="manualBtn" onclick="startManual()">✍️ Bon zelf invullen (bijv. markt)</button>
+    </div>
+  </div>
+
+  <div id="tab-edit" class="hidden">
+    <div class="card">
+      <div class="section-title" id="editTitle">Bon controleren</div>
+      <div id="editNotes"></div>
+      <div id="editImg"></div>
+      <div id="pinPanel"></div>
+      <div id="editForm">
+        <label class="fld-label" for="edSupplier">Winkel</label>
+        <input type="text" id="edSupplier" list="supplierList" autocomplete="off" placeholder="Bijv. Poelier Jonker">
+        <datalist id="supplierList"></datalist>
+        <label class="fld-label" for="edDate">Datum</label>
+        <input type="date" id="edDate">
+      </div>
+    </div>
+    <div class="card" id="linesCard">
+      <div class="section-title">Wat staat er op de bon?</div>
+      <p class="small-text" style="margin-top:0;">Alles is aan te passen. Vul <b>Aantal</b> en <b>Prijs</b> in, dan rekent de app het <b>Totaal</b> uit. Gewogen? Tik op <b>kg</b>.</p>
+      <div id="edLines"></div>
+      <button class="big-button secondary" id="addLineBtn" onclick="addLine(true)">+ Nog een regel</button>
+      <div id="edTotals"></div>
+    </div>
+    <div class="card" id="editButtons">
+      <button class="big-button huge" id="saveBtn" onclick="saveEdit()">✓ Bewaren</button>
+      <button class="big-button secondary" id="skipBtn" onclick="cancelEdit()">Annuleren</button>
+    </div>
+  </div>
+
+  <div id="tab-bon" class="hidden">
+    <button class="link-button" onclick="showTab('bonnen')">← Alle bonnen</button>
+    <div id="billView"></div>
+  </div>
+
+  <div id="tab-versturen" class="hidden">
+    <div class="card">
+      <div class="section-title">Alle bonnen versturen</div>
+      <p class="small-text" style="margin-top:0;">Kies een periode. Je stuurt dan alle bonnen uit die periode in één bericht.</p>
+      <div class="seg" id="periodSeg">
+        <button type="button" data-per="week">Deze week</button>
+        <button type="button" data-per="maand">Deze maand</button>
+        <button type="button" data-per="vorige">Vorige maand</button>
+        <button type="button" data-per="eigen">Eigen periode</button>
+      </div>
+      <div class="two hidden" id="ownPeriod">
+        <label><span class="fld-label">Van</span><input type="date" id="perFrom"></label>
+        <label><span class="fld-label">Tot en met</span><input type="date" id="perTo"></label>
+      </div>
+      <div id="periodSummary" style="margin-top:0.5rem;"></div>
+    </div>
+  </div>
+
+  <div id="tab-meer" class="hidden">
+    <div class="card">
+      <div class="section-title">Back-up</div>
+      <p class="small-text" style="margin-top:0;">Bewaar je bonnen als bestand, bijvoorbeeld voor een nieuwe telefoon. Foto's gaan niet mee.</p>
+      <button class="big-button" id="backupBtn" onclick="exportBackup()">💾 Bewaar back-up</button>
+      <input type="file" id="backupInput" accept="application/json,.json" style="display:none;" onchange="importBackupFile(this)">
+      <button class="big-button secondary" id="restoreBtn" onclick="document.getElementById('backupInput').click()">📂 Zet back-up terug</button>
+    </div>
+    <div class="card">
+      <div class="section-title">App delen</div>
+      <p class="small-text" style="margin-top:0;">Stuur Kassabon Analyse naar iemand anders.</p>
+      <button type="button" class="big-button huge share-wa" id="shareAppWaBtn" onclick="shareViaWhatsApp(appShareText())">📲 Deel de app via WhatsApp</button>
+      <button type="button" class="big-button secondary" id="shareAppOtherBtn" onclick="shareTextOther(appShareText())">Andere app / kopiëren</button>
+    </div>
+    <div class="card">
+      <div class="section-title">Op je beginscherm</div>
+      <button class="big-button secondary" onclick="showInstallHint()">📱 Uitleg: zet de app op je beginscherm</button>
+      <p class="small-text">Je gegevens blijven op deze telefoon. De app stuurt niets naar internet, behalve als jij iets deelt. Geen reclame, geen volgen.</p>
+    </div>
+    <div class="card">
+      <button class="big-button danger" onclick="clearAll()">Alles wissen</button>
+      <p class="small-text" style="text-align:center;">Kassabon Analyse · versie <span id="appVersion"></span></p>
+    </div>
+  </div>
+</div>
+
+<nav class="tabs">
+  <button class="tab active" data-tab="bonnen" onclick="showTab('bonnen')"><span class="ic">🧾</span>Bonnen</button>
+  <button class="tab" data-tab="nieuw" onclick="showTab('nieuw')"><span class="ic">📷</span>Nieuw</button>
+  <button class="tab" data-tab="versturen" onclick="showTab('versturen')"><span class="ic">📤</span>Versturen</button>
+  <button class="tab" data-tab="meer" onclick="showTab('meer')"><span class="ic">⚙️</span>Meer</button>
+</nav>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="undo-bar hidden" id="undoBar"><span id="undoText"></span><button type="button" id="undoBtn" onclick="doUndo()">↩ Ongedaan maken</button></div>
+<div class="ask hidden" id="askBox"><div class="card"><div class="section-title" id="askText"></div><p class="small-text" id="askSub"></p>
+  <button class="big-button" id="askYes"></button><button class="big-button secondary" id="askNo"></button></div></div>
+<div class="viewer hidden" id="viewer"><img id="viewerImg" alt="Foto van de bon"><div id="viewerNav" class="two" style="padding:0 0.5rem;"></div><button class="big-button" onclick="closeViewer()">Sluiten</button></div>
+
+<script>
+// ==PARSER-START==
+var ReceiptParser = (function () {
+  function normNums(s) {
+    // "4, 25" -> "4.25" ; "22,15" -> "22.15" ; "0,610" -> "0.610"
+    s = s.replace(/(\d)\s*,\s(\d{2})(?!\d)/g, '$1.$2');
+    s = s.replace(/(\d),(\d{2,3})(?!\d)/g, '$1.$2');
+    s = s.replace(/(\d)\s\.(\d{2})(?!\d)/g, '$1.$2');
+    return s;
+  }
+  var SKIP_RE = /(sub\s*-?\s*tota|subt0|btw|b\.t\.w|excl|incl|bedankt|tot\s*ziens|dank\s*u|graag\s*tot|kvk|k\.v\.k|\btel\b|tel[:.]|telefoon|www\.|http|e-?mail|@|\bbon\s*[:#n]|\bbon\b.*\d{3}|verk\s*[:#]|kassa|kassi[eè]re|schaal|\bstk\b|artikel(en)?\b|aantal\s*art|wisselgeld|terug\b|retour|cash\b|contant|klantnr|bonnr|transactie|terminal|merchant|periode|auth|kaartnr|kaart\s*:|akkoord|kopie|kaarthouder|contactlo|debit|maestro|mastercard|v\s?pay|visa\b|betaling|betaald|\bpin\b|openingstijden|btw-?nr|iban|spaarpunt|koers)/i;
+  var PIN_KW = /(kaarthouder|terminal|merchant|transactie|contactlo|auth\.?\s*code|autorisatie|akkoord|maestro|mastercard|v\s?pay|visa|debit|pinpas|kaartnr|leesmethode|betaling|poi\b|kaartserienummer)/ig;
+  var ADDR_RE = /(straat|laan|weg|plein|gracht|kade|singel|dijk|markt\s*\d|\d{4}\s?[a-z]{2}\b|tel|www|@|\b\d{2,3}[-\s]?\d{6,7}\b)/i;
+  var DATE_RE = /([(|lI!\[]?)(\d{1,2})\s?[-\/.]\s?(\d{1,2})\s?[-\/.]\s?(\d{4}|\d{2})(?!\d)/;
+  var TIME_RE = /\b([01]?\d|2[0-3])[:.]([0-5]\d)\b/;
+  var PRICE = '(-?\\d{1,4}\\.\\d{2})';
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+  function validDate(d, m, y) {
+    if (y < 100) y += 2000;
+    if (m < 1 || m > 12 || d < 1 || d > 31 || y < 2000 || y > 2099) return null;
+    var dt = new Date(y, m - 1, d);
+    if (dt.getMonth() !== m - 1) return null;
+    return y + '-' + pad2(m) + '-' + pad2(d);
+  }
+  function findDate(lines) {
+    for (var i = 0; i < lines.length; i++) {
+      var m = DATE_RE.exec(lines[i]);
+      if (!m) continue;
+      var d = parseInt(m[2], 10), mo = parseInt(m[3], 10), y = parseInt(m[4], 10);
+      var iso = validDate(d, mo, y);
+      if (!iso && m[1] && d < 10) iso = validDate(10 + d, mo, y); // "(0-11-26" -> "10-11-26"
+      if (iso) {
+        var t = TIME_RE.exec(lines[i].slice(m.index + m[0].length)) || (lines[i + 1] && TIME_RE.exec(lines[i + 1]));
+        return { date: iso, time: t ? pad2(parseInt(t[1], 10)) + ':' + t[2] : '' };
+      }
+    }
+    return null;
+  }
+  function letters(s) { return (s.match(/[A-Za-zÀ-ÿ]/g) || []).length; }
+  function simplify(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9à-ÿ]/g, ''); }
+  function lev(a, b) {
+    if (a === b) return 0;
+    var m = a.length, n = b.length, prev = [], cur = [], i, j;
+    for (j = 0; j <= n; j++) prev[j] = j;
+    for (i = 1; i <= m; i++) {
+      cur = [i];
+      for (j = 1; j <= n; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      prev = cur;
+    }
+    return prev[n];
+  }
+  function matchKnown(line, known) {
+    var s = simplify(line);
+    if (s.length < 3) return null;
+    for (var k = 0; k < (known || []).length; k++) {
+      var t = simplify(known[k]);
+      if (!t) continue;
+      if (s === t || s.indexOf(t) >= 0) return known[k];
+      if (Math.abs(s.length - t.length) <= 3 && lev(s, t) <= Math.max(1, Math.floor(t.length / 6))) return known[k];
+    }
+    return null;
+  }
+  function niceCase(s) {
+    s = s.replace(/\s+/g, ' ').trim();
+    if (letters(s) && s === s.toUpperCase()) s = s.toLowerCase().replace(/(^|[\s\-\/&(])([a-zà-ÿ])/g, function (a, p, c) { return p + c.toUpperCase(); });
+    return s;
+  }
+  function sentenceCase(s) {
+    s = s.replace(/\s+/g, ' ').trim();
+    if (letters(s) && s === s.toUpperCase()) { s = s.toLowerCase(); s = s.charAt(0).toUpperCase() + s.slice(1); }
+    return s;
+  }
+  function cleanName(s) {
+    s = s.replace(/\(\s*[A-Za-z0-9!|]{1,6}\s*\)?\s*$/, '');      // (UTK1), (VTX1)
+    s = s.replace(/\s*\/\s*/g, '/');
+    s = s.replace(/^[^A-Za-zÀ-ÿ0-9]+/, '').replace(/[^A-Za-zÀ-ÿ0-9.)%]+$/, '');
+    return sentenceCase(s);
+  }
+  function findSupplier(lines, known) {
+    var top = lines.slice(0, 10);
+    for (var i = 0; i < top.length; i++) { var k = matchKnown(top[i], known); if (k) return { name: k, known: true }; }
+    function okName(l) {
+      var n = letters(l);
+      if (n < 4 || n / l.replace(/\s/g, '').length < 0.7) return false;
+      if (DATE_RE.test(l) || ADDR_RE.test(l) || SKIP_RE.test(l)) return false;
+      return /[A-Za-zÀ-ÿ]{4,}/.test(l);
+    }
+    // meestal staat de naam direct boven het adres (…straat 19)
+    for (i = 1; i < Math.min(9, lines.length); i++) {
+      if (/(straat|laan|weg|plein|gracht|kade|singel|dijk|markt)\s*\d/i.test(lines[i]) && okName(lines[i - 1].trim()))
+        return { name: niceCase(lines[i - 1].trim().replace(/[^A-Za-zÀ-ÿ0-9&'.\- ]/g, ' ')), known: false };
+    }
+    for (i = 0; i < Math.min(8, lines.length); i++) {
+      var l = lines[i].trim(), n = letters(l);
+      if (n < 4 || n / l.replace(/\s/g, '').length < 0.7) continue;
+      if (DATE_RE.test(l) || ADDR_RE.test(l) || SKIP_RE.test(l)) continue;
+      if (/^(wild|vers|sinds|uw|welkom|kassabon|bon|factuur|ticket)\b/i.test(l)) continue;
+      return { name: niceCase(l.replace(/[^A-Za-zÀ-ÿ0-9&'.\- ]/g, ' ')), known: false };
+    }
+    return { name: '', known: false };
+  }
+  function num(s) { return Math.round(parseFloat(s) * 1000) / 1000; }
+  function r2(x) { return Math.round(x * 100) / 100; }
+  function mkLine(name, qty, unit, price, total) {
+    var ln = { name: name, qty: qty, unit: unit, unitPrice: price, total: total };
+    if (qty != null && price != null && total != null && Math.abs(r2(qty * price) - total) > 0.011) ln.flag = 'calc';
+    return ln;
+  }
+  function parse(text, known) {
+    var raw = String(text || '').split(/\r?\n/);
+    var lines = [];
+    raw.forEach(function (l) { l = normNums(l).replace(/[€]/g, ' ').replace(/\s+/g, ' ').trim(); if (l) lines.push(l); });
+    var res = { supplier: '', supplierKnown: false, date: '', time: '', lines: [], total: null, rounding: 0, cash: null, isPin: false, pinTotal: null };
+    var sup = findSupplier(lines, known); res.supplier = sup.name; res.supplierKnown = sup.known;
+    var dt = findDate(lines); if (dt) { res.date = dt.date; res.time = dt.time; }
+    var pinHits = (String(text || '').match(PIN_KW) || []).length;
+    var pending = null, ended = false;
+    for (var i = 0; i < lines.length; i++) {
+      var l = lines[i], low = l.toLowerCase();
+      var mt;
+      if (/af\s*rond|afronding|\bfrond|^a\w?r?on\w?\.?\s+-?0\.0\d$/i.test(l)) { mt = new RegExp(PRICE).exec(l); if (mt && Math.abs(num(mt[1])) < 0.05) res.rounding = num(mt[1]); pending = null; continue; }
+      if (!/sub/i.test(l) && (mt = /\b(totaal|total|te\s*betalen|bedrag)\b\s*:?\s*(eur)?\s*(-?\d{1,5}\.\d{2})/i.exec(l))) {
+        if (pinHits >= 2) res.pinTotal = num(mt[3]);
+        if (res.total == null) res.total = num(mt[3]);
+        ended = true; pending = null; continue;
+      }
+      if (/\b(cash|contant)\b/i.test(l)) { mt = new RegExp(PRICE).exec(l); if (mt && res.cash == null) res.cash = num(mt[1]); pending = null; continue; }
+      if (ended) continue;
+      if (/^\(\s*[A-Za-z0-9!|]{1,6}\s*\)?$/.test(l)) continue; // losse code zoals (UTK1) op eigen regel
+      if (SKIP_RE.test(l) || DATE_RE.test(l) || ADDR_RE.test(l)) { if (!/\d\.\d{2}/.test(l) || SKIP_RE.test(l)) { pending = /sub/i.test(l) ? null : pending; continue; } }
+      if (/^(kg|€|eur)?\s*(kg)?\s*[€e]?\s*\/?\s*kg/i.test(l) && letters(l) <= 6) continue; // kopregel "kg €/kg €"
+      // 1 X 4.25 4.25
+      if ((mt = new RegExp('(\\d{1,3})\\s*[xX×*]\\s*' + PRICE + '\\s+' + PRICE + '\\s*[A-Z]?$').exec(l))) {
+        var before = l.slice(0, mt.index).trim();
+        var nm = letters(before) >= 3 ? cleanName(before) : (pending || '');
+        var q0 = num(mt[1]); if (!q0) q0 = num(mt[2]) > 0 ? Math.max(1, Math.round(num(mt[3]) / num(mt[2]))) : 1;
+        res.lines.push(mkLine(nm, q0, 'st', num(mt[2]), num(mt[3]))); pending = null; continue;
+      }
+      // 0.610 16.00 9.89 (kg, €/kg, totaal)
+      if ((mt = new RegExp('(\\d{1,3}\\.\\d{3})\\s*(kg)?\\s*[xX×*]?\\s*' + PRICE + '\\s*(/\\s*kg)?\\s+' + PRICE + '\\s*[A-Z]?$', 'i').exec(l))) {
+        var b2 = l.slice(0, mt.index).trim();
+        var nm2 = letters(b2) >= 3 ? cleanName(b2) : (pending || '');
+        res.lines.push(mkLine(nm2, num(mt[1]), 'kg', num(mt[3]), num(mt[5]))); pending = null; continue;
+      }
+      var prices = l.match(/-?\d{1,4}\.\d{2}(?!\d)/g) || [];
+      var lt = letters(l.replace(/\b[xX]\b/g, ''));
+      if (prices.length && lt >= 3) {
+        // naam ... prijs  (eventueel "2 MELK 1.19 2.38" of "MELK 2 x 1.19")
+        var firstIdx = l.search(/-?\d{1,4}\.\d{2}(?!\d)/);
+        var namePart = l.slice(0, firstIdx).trim();
+        if (letters(namePart) >= 3) {
+          var q = 1, mq = /^(\d{1,2})\s+(.*)$/.exec(namePart);
+          if (mq && letters(mq[2]) >= 3) { q = parseInt(mq[1], 10); namePart = mq[2]; }
+          var mx = /(\d{1,2})\s*[xX×*]\s*$/.exec(namePart);
+          if (mx) { q = parseInt(mx[1], 10); namePart = namePart.slice(0, mx.index); }
+          var tot = num(prices[prices.length - 1]);
+          var up = prices.length >= 2 ? num(prices[prices.length - 2]) : r2(tot / q);
+          if (prices.length >= 2 && q === 1 && up > 0 && Math.abs(Math.round(tot / up) * up - tot) < 0.011) q = Math.round(tot / up);
+          res.lines.push(mkLine(cleanName(namePart), q, 'st', up, tot)); pending = null; continue;
+        }
+      }
+      if (prices.length && pending) {
+        var p = prices.map(num);
+        if (p.length >= 2) {
+          var up2 = p[p.length - 2], t2 = p[p.length - 1], q2 = up2 > 0 ? Math.max(1, Math.round(t2 / up2)) : 1;
+          var lead = /^\D{0,4}(\d{1,2})\s*[xX×*]/.exec(l); if (lead && parseInt(lead[1], 10) > 0) q2 = parseInt(lead[1], 10);
+          res.lines.push(mkLine(pending, q2, 'st', up2, t2));
+        } else res.lines.push(mkLine(pending, 1, 'st', p[0], p[0]));
+        pending = null; continue;
+      }
+      if (lt >= 3 && !prices.length) { pending = cleanName(l); if (letters(pending) < 3) pending = null; continue; }
+    }
+    // opruimen: 0,00-regels weg; ±0,01/0,02 is afronding; regels groter dan of gelijk aan het totaal zijn ruis
+    var keep = [];
+    res.lines.forEach(function (ln) {
+      if (ln.total == null || Math.abs(ln.total) < 0.005) return;
+      if (Math.abs(ln.total) <= 0.02 && (ln.qty == null || ln.qty === 1)) { if (!res.rounding) res.rounding = ln.total; return; }
+      if (res.total != null && res.lines.length > 1 && ln.total >= res.total && ln.total > 0) return;
+      keep.push(ln);
+    });
+    res.lines = keep;
+    if (pinHits >= 2 && (res.lines.length === 0 || pinHits >= 4) && (res.pinTotal != null || res.total != null)) {
+      res.isPin = true; if (res.pinTotal == null) res.pinTotal = res.total; res.lines = [];
+    }
+    if (res.total == null && res.cash != null) res.total = res.cash;
+    return res;
+  }
+  return { parse: parse, normNums: normNums, matchKnown: matchKnown, simplify: simplify, niceCase: niceCase };
+})();
+// ==PARSER-END==
+
+// ---------- Hulpjes ----------
+const APP_NAME = 'Kassabon Analyse';
+const APP_SHARE_URL = 'https://peterhanselman-star.github.io/kassabon-analyse/';
+const LS_BILLS = 'kassabonBills', LS_DRAFT = 'kassabonDraft', LS_TS = 'kassabonTextSize', LS_HINT = 'kassabonInstallHint', LS_PEND = 'kassabonPendingPhotoDelete';
+const MONTHS = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
+const MONTHS_LONG = ['januari', 'februari', 'maart', 'april', 'mei', 'juni', 'juli', 'augustus', 'september', 'oktober', 'november', 'december'];
+const DAYS = ['zo', 'ma', 'di', 'wo', 'do', 'vr', 'za'];
+function $(id) { return document.getElementById(id); }
+function pad2(n) { return (n < 10 ? '0' : '') + n; }
+function uid(p) { return (p || '') + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+function escapeHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function cents(x) { return Math.round((Number(x) || 0) * 100); }
+function euro(x) { const c = Math.round((Number(x) || 0) * 100); const s = (Math.abs(c) / 100).toFixed(2).replace('.', ','); return (c < 0 ? '− ' : '') + '€ ' + s; }
+function numStr(x, dec) { if (x == null || isNaN(x)) return ''; return Number(x).toFixed(dec).replace('.', ','); }
+function qtyStr(q, unit) { if (q == null || isNaN(q)) return ''; if (unit === 'kg') return numStr(q, 3); return String(Math.round(q * 1000) / 1000).replace('.', ','); }
+// "12,50" "12.50" "€ 12" -> 12.5 ; leeg -> null ; ongeldig -> NaN
+function parseNum(s) {
+  s = String(s == null ? '' : s).replace(/€|eur|\s/gi, '');
+  if (!s) return null;
+  if (/^-?\d{1,3}(\.\d{3})+,\d+$/.test(s)) s = s.replace(/\./g, '');
+  s = s.replace(',', '.');
+  if (!/^-?(\d+\.?\d*|\.\d+)$/.test(s)) return NaN;
+  return parseFloat(s);
+}
+function dateIso(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
+function todayIso() { return dateIso(new Date()); }
+function isoToDate(iso) { const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || ''); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; }
+function dateLabel(iso, withDay) { const d = isoToDate(iso); if (!d) return 'zonder datum'; return (withDay === false ? '' : DAYS[d.getDay()] + ' ') + d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear(); }
+function normSupplier(s) { return ReceiptParser.simplify(s); }
+let toastTimer = null;
+function showToast(msg, ms) { const t = $('toast'); t.style.display = ''; t.style.bottom = $('undoBar').classList.contains('hidden') ? '' : 'calc(' + ($('undoBar').offsetHeight + 90) + 'px + env(safe-area-inset-bottom))'; t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), ms || 1800); }
+
+// ---------- Opslag ----------
+let bills = [];
+try { bills = JSON.parse(localStorage.getItem(LS_BILLS) || '[]'); if (!Array.isArray(bills)) bills = []; } catch (e) { bills = []; }
+function saveBills() { try { localStorage.setItem(LS_BILLS, JSON.stringify(bills)); } catch (e) { alert('Opslag vol of niet beschikbaar'); } }
+function findBill(id) { return bills.find(b => b.id === id) || null; }
+const DB_NAME = 'kassabonDB';
+let dbPromise = null;
+function openDB() {
+  if (dbPromise) return dbPromise;
+  dbPromise = new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = () => { req.result.createObjectStore('photos', { keyPath: 'id' }); };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+  return dbPromise;
+}
+function dbTx(mode, fn) {
+  return openDB().then(db => new Promise((resolve, reject) => {
+    const tx = db.transaction('photos', mode); const r = fn(tx.objectStore('photos'));
+    tx.oncomplete = () => resolve(r && r.result !== undefined ? r.result : undefined);
+    tx.onerror = () => reject(tx.error);
+  }));
+}
+function savePhoto(p) { return dbTx('readwrite', s => s.put(p)).catch(() => {}); }
+function getPhoto(id) { return dbTx('readonly', s => s.get(id)).catch(() => null); }
+function deletePhoto(id) { return dbTx('readwrite', s => s.delete(id)).catch(() => {}); }
+function clearPhotos() { return dbTx('readwrite', s => s.clear()).catch(() => {}); }
+function readPending() { try { const a = JSON.parse(localStorage.getItem(LS_PEND) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+function writePending(a) { try { if (a.length) localStorage.setItem(LS_PEND, JSON.stringify(a)); else localStorage.removeItem(LS_PEND); } catch (e) {} }
+function srcPhotoIds(list) { const a = []; (list || []).forEach(s => { if (s.photoId) a.push(s.photoId); if (s.fullPhotoId) a.push(s.fullPhotoId); }); return a; }
+function photosInUse() {
+  const s = new Set();
+  bills.forEach(b => { srcPhotoIds(b.sources).concat(b.extraPhotos || []).forEach(id => s.add(id)); });
+  [draft].concat(queue).forEach(d => { if (d) { srcPhotoIds(d.sources).forEach(id => s.add(id)); if (d.fullPhotoId) s.add(d.fullPhotoId); } });
+  return s;
+}
+function purgePhotos(ids) { const used = photosInUse(); return Promise.all(ids.filter(id => !used.has(id)).map(deletePhoto)).then(() => writePending(readPending().filter(id => ids.indexOf(id) < 0))); }
+
+// ---------- Rekenen ----------
+function lineIsBlank(l) { return !String(l.name || '').trim() && l.total == null && l.qty == null && l.unitPrice == null; }
+function lineCounts(l) { return typeof l.total === 'number' && !isNaN(l.total); }
+function billLinesCents(b) { return (b.lines || []).reduce((s, l) => s + (lineCounts(l) ? cents(l.total) : 0), 0); }
+function billTotalCents(b) { return billLinesCents(b) + cents(b.rounding || 0); }
+const PKG_UNITS = [['g', 'g'], ['kg', 'kg'], ['ml', 'ml'], ['l', 'liter'], ['stuk', 'stuks']];
+// Vergelijkprijs: per 100 g, per liter of per stuk (prijzen incl. btw)
+function compareFor(l) {
+  let up = l.unitPrice != null && !isNaN(l.unitPrice) ? l.unitPrice : null;
+  if (up == null && lineCounts(l)) up = l.total / (l.qty || 1);
+  if (up == null || !isFinite(up)) return null;
+  const size = l.pkgSize, pu = l.pkgUnit;
+  if (size && size > 0 && pu) {
+    if (pu === 'g') return { per: '100 g', price: up / size * 100 };
+    if (pu === 'kg') return { per: '100 g', price: up / (size * 10) };
+    if (pu === 'ml') return { per: 'liter', price: up / size * 1000 };
+    if (pu === 'l') return { per: 'liter', price: up / size };
+    if (pu === 'stuk') return { per: 'stuk', price: up / size };
+  }
+  if (l.unit === 'kg') return { per: '100 g', price: up / 10 };
+  return null;
+}
+function cmpText(c) { return c ? euro(c.price) + ' per ' + c.per : ''; }
+function refreshCmp(l) { const c = compareFor(l); if (c) l.cmp = { per: c.per, price: Math.round(c.price * 10000) / 10000 }; else delete l.cmp; }
+function calcFlag(l) {
+  if (l.qty != null && l.unitPrice != null && lineCounts(l) && !isNaN(l.qty) && !isNaN(l.unitPrice) && Math.abs(cents(l.qty * l.unitPrice) - cents(l.total)) > 1)
+    return qtyStr(l.qty, l.unit) + (l.unit === 'kg' ? ' kg' : '') + ' × ' + euro(l.unitPrice) + ' = ' + euro(l.qty * l.unitPrice) + ', maar het totaal is ' + euro(l.total) + '.';
+  return '';
+}
+function newLine() { return { id: uid('l'), name: '', qty: null, unit: 'st', unitPrice: null, total: null, pkgSize: null, pkgUnit: null }; }
+function ensureBlankLine(b) { const ls = b.lines || (b.lines = []); if (!ls.length || !lineIsBlank(ls[ls.length - 1])) ls.push(newLine()); }
+function cleanLines(b) { b.lines = (b.lines || []).filter(l => !lineIsBlank(l)); b.lines.forEach(l => { refreshCmp(l); if (!l.unit) l.unit = 'st'; }); }
+function smartHint(b, d) {
+  const hit = (b.lines || []).find(l => lineCounts(l) && cents(l.total) === Math.abs(d));
+  return hit ? ' Het verschil is precies de regel “' + escapeHtml(hit.name || 'zonder naam') + '”.' : '';
+}
+function checkHtml(b) {
+  const sum = billTotalCents(b);
+  let h = '';
+  if (typeof b.receiptTotal === 'number') {
+    const d = sum - cents(b.receiptTotal);
+    h += d === 0 ? '<div class="note ok check" id="totalCheck">✓ Klopt met het totaal op de bon (' + euro(b.receiptTotal) + ')</div>'
+      : '<div class="note bad check" id="totalCheck">Verschil met het totaal op de bon: ' + euro(Math.abs(d) / 100) + (d > 0 ? ' meer' : ' minder') + '. Op de bon staat ' + euro(b.receiptTotal) + ', de regels samen zijn ' + euro(sum / 100) + '.' + smartHint(b, d) + '</div>';
+  }
+  if (b.pinCheck && typeof b.pinCheck.amount === 'number') {
+    const d2 = sum - cents(b.pinCheck.amount);
+    h += d2 === 0 ? '<div class="note ok check" id="pinCheck">💳 Pinbon ' + euro(b.pinCheck.amount) + ': ✓ Klopt</div>'
+      : '<div class="note bad check" id="pinCheck">💳 Pinbon ' + euro(b.pinCheck.amount) + ': verschil ' + euro(Math.abs(d2) / 100) + (d2 > 0 ? ' (de bon is hoger)' : ' (de pinbon is hoger)') + '</div>';
+  }
+  return h;
+}
+
+// ---------- Tabs ----------
+let curTab = 'bonnen', viewBillId = null;
+function showTab(t) {
+  ['bonnen', 'nieuw', 'edit', 'bon', 'versturen', 'meer'].forEach(x => $('tab-' + x).classList.toggle('hidden', x !== t));
+  const hl = t === 'edit' ? (draft && draft.isNew ? 'nieuw' : 'bonnen') : t === 'bon' ? 'bonnen' : t;
+  document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.getAttribute('data-tab') === hl));
+  curTab = t;
+  if (t === 'bonnen') renderList();
+  if (t === 'versturen') renderPeriod();
+  if (t === 'nieuw' && draft && draft.isNew && !busy) { /* een half ingevulde bon blijft bewaard */ }
+  window.scrollTo(0, 0);
+}
+
+// ---------- Lijst ----------
+function sortedBills() { return bills.slice().sort((a, b) => (a.date === b.date ? (b.created || 0) - (a.created || 0) : (a.date < b.date ? 1 : -1))); }
+function billSubLine(b) {
+  const n = (b.lines || []).filter(lineCounts).length, src = (b.sources || []).length;
+  let s = n + (n === 1 ? ' regel' : ' regels');
+  if (src > 1) s += ' · samengevoegd uit ' + src + ' bonnen';
+  if (b.pinCheck && typeof b.pinCheck.amount === 'number') s += cents(b.pinCheck.amount) === billTotalCents(b) ? ' · 💳 ✓ Klopt' : ' · 💳 Verschil';
+  else if (typeof b.receiptTotal === 'number' && cents(b.receiptTotal) !== billTotalCents(b)) s += ' · ⚠ Verschil met bon';
+  return s;
+}
+function renderList() {
+  const el = $('billList'), list = sortedBills();
+  $('listIntro').classList.toggle('hidden', !list.length);
+  let h = '';
+  if (draft && draft.isNew) h += '<button class="big-button" id="resumeBtn" onclick="showTab(\'edit\')">↩ Verder met de bon die je aan het invullen was</button>';
+  if (!list.length) { el.innerHTML = h + '<p>Nog geen bonnen. Maak een foto van een bon of vul er zelf een in.</p>'; return; }
+  let lastM = '';
+  list.forEach(b => {
+    const d = isoToDate(b.date), m = d ? MONTHS_LONG[d.getMonth()] + ' ' + d.getFullYear() : 'Zonder datum';
+    if (m !== lastM) { h += '<div class="month-head">' + m + '</div>'; lastM = m; }
+    h += '<div class="bill-row"><button type="button" class="bill-item" data-bill="' + b.id + '"><div class="bi-top"><span class="bi-name">' + escapeHtml(b.supplier || 'Onbekende winkel') +
+      '</span><span class="bi-total">' + euro(billTotalCents(b) / 100) + '</span></div><div class="bi-sub">' + dateLabel(b.date) + ' · ' + billSubLine(b) + '</div></button>' +
+      '<button type="button" class="del-btn" data-delbill="' + b.id + '" aria-label="Bon ' + escapeHtml(b.supplier || '') + ' wissen">✕</button></div>';
+  });
+  el.innerHTML = h;
+}
+document.addEventListener('click', e => {
+  const o = e.target.closest('[data-bill]'); if (o) { openBill(o.getAttribute('data-bill')); return; }
+  const d = e.target.closest('[data-delbill]'); if (d) { deleteBill(d.getAttribute('data-delbill')); }
+});
+
+// ---------- Ongedaan maken ----------
+let undoState = null, undoTimer = null;
+function showUndo(text, undoFn, finalFn, ms) {
+  hideUndo();
+  undoState = { undo: undoFn, final: finalFn };
+  $('toast').classList.remove('show'); $('toast').style.display = 'none';
+  $('undoText').textContent = text; $('undoBar').classList.remove('hidden');
+  undoTimer = setTimeout(hideUndo, ms || 8000);
+}
+function hideUndo() { clearTimeout(undoTimer); const s = undoState; undoState = null; $('undoBar').classList.add('hidden'); if (s && s.final) s.final(); }
+function doUndo() { const s = undoState; undoState = null; clearTimeout(undoTimer); $('undoBar').classList.add('hidden'); if (s && s.undo) s.undo(); }
+window.addEventListener('pagehide', () => { if (undoState) hideUndo(); });
+
+function billPhotoIds(b) { return srcPhotoIds(b.sources).concat(b.extraPhotos || []).filter((x, i, a) => a.indexOf(x) === i); }
+function deleteBill(id) {
+  const idx = bills.findIndex(b => b.id === id); if (idx < 0) return;
+  const b = bills[idx]; bills.splice(idx, 1); saveBills();
+  const ids = billPhotoIds(b); writePending(readPending().concat(ids));
+  if (curTab === 'bon' && viewBillId === id) showTab('bonnen'); else renderList();
+  showUndo('Bon “' + (b.supplier || 'zonder naam') + ', ' + dateLabel(b.date, false) + '” gewist', () => {
+    bills.splice(Math.min(idx, bills.length), 0, b); saveBills(); writePending(readPending().filter(x => ids.indexOf(x) < 0));
+    if (curTab === 'bonnen') renderList(); showToast('Bon teruggezet');
+  }, () => purgePhotos(ids));
+}
+
+// ---------- Bon bekijken ----------
+function openBill(id) { viewBillId = id; renderBill(); showTab('bon'); }
+function lineCalcText(l) {
+  if (l.qty == null || l.unitPrice == null) return '';
+  return qtyStr(l.qty, l.unit) + (l.unit === 'kg' ? ' kg × ' + euro(l.unitPrice) + '/kg' : ' × ' + euro(l.unitPrice));
+}
+function renderBill() {
+  const b = findBill(viewBillId), el = $('billView');
+  if (!b) { el.innerHTML = '<div class="card">Deze bon bestaat niet meer.</div>'; return; }
+  const src = (b.sources || []).length;
+  let h = '<div class="card"><div class="bill-head" id="bvSupplier">' + escapeHtml(b.supplier || 'Onbekende winkel') + '</div><div id="bvDate">' + dateLabel(b.date) + '</div>';
+  if (src > 1) h += '<div style="margin-top:0.2rem;"><span class="badge" id="bvMerged">samengevoegd uit ' + src + ' bonnen</span></div>';
+  h += '<div id="bvLines" style="margin-top:0.4rem;">';
+  const ls = (b.lines || []).filter(l => !lineIsBlank(l));
+  if (!ls.length) h += '<p>Nog geen regels.</p>';
+  ls.forEach(l => {
+    const c = compareFor(l), f = calcFlag(l);
+    h += '<div class="bl"><div class="bl-name">' + escapeHtml(l.name || '(zonder omschrijving)') + '</div><div class="bl-calc"><span>' + lineCalcText(l) + '</span><span class="amt">' + (lineCounts(l) ? euro(l.total) : '–') + '</span></div>' +
+      (c ? '<div><span class="cmp">' + cmpText(c) + '</span></div>' : '') + (f ? '<div class="flag">⚠ ' + escapeHtml(f) + '</div>' : '') + '</div>';
+  });
+  h += '</div>';
+  if (cents(b.rounding)) h += '<div class="sum-row"><span>Afronding</span><span>' + euro(b.rounding) + '</span></div>';
+  h += '<div class="grand"><span>Totaal</span><span id="bvTotal">' + euro(billTotalCents(b) / 100) + '</span></div>';
+  h += '<div id="bvChecks">' + checkHtml(b) + '</div>';
+  h += '<p class="small-text" style="margin:0.2rem 0 0;">Prijzen zijn inclusief btw.</p></div>';
+  h += '<div class="card"><label class="fld-label" for="pinAmount">💳 Betaald met pin (bedrag op de pinbon)</label><input type="text" inputmode="decimal" id="pinAmount" placeholder="Bijv. 26,40" value="' +
+    (b.pinCheck && typeof b.pinCheck.amount === 'number' ? numStr(b.pinCheck.amount, 2) : '') + '"><p class="small-text" style="margin:0.3rem 0 0;">Vul in wat je gepind hebt, dan zie je of het klopt.</p></div>';
+  h += '<div class="card"><div class="section-title">Bon delen</div><button type="button" class="big-button huge share-wa" id="shareBillWa" onclick="shareBill(\'wa\')">📤 Stuur via WhatsApp</button>' +
+    '<button type="button" class="big-button secondary" id="shareBillOther" onclick="shareBill(\'other\')">Andere app / kopiëren</button>' +
+    '<details id="billPreview"><summary>Bekijk tekst</summary><pre class="share-text" id="billShareText">' + escapeHtml(billShareText(b)) + '</pre></details></div>';
+  h += '<div class="card"><button class="big-button" id="editBillBtn" onclick="editBill(\'' + b.id + '\')">✏️ Aanpassen</button>';
+  const ph = billPhotoIds(b);
+  if (ph.length) h += '<button class="big-button secondary" id="photosBtn" onclick="openViewer(\'' + b.id + '\')">📷 Foto' + (ph.length > 1 ? "'s" : '') + ' van de bon</button>';
+  if (src > 1) h += '<button class="big-button secondary" id="splitBtn" onclick="splitBill(\'' + b.id + '\')">↔ Splits weer (laatste bon apart)</button>';
+  h += '<button class="big-button danger" id="delBillBtn" onclick="deleteBill(\'' + b.id + '\')">🗑 Bon wissen</button></div>';
+  el.innerHTML = h;
+  $('pinAmount').addEventListener('input', () => {
+    const v = parseNum($('pinAmount').value);
+    if (v == null) delete b.pinCheck; else if (!isNaN(v)) b.pinCheck = Object.assign({}, b.pinCheck || {}, { amount: Math.round(v * 100) / 100 }); else return;
+    b.updated = Date.now(); saveBills();
+    $('bvChecks').innerHTML = checkHtml(b);
+    $('billShareText').textContent = billShareText(b);
+  });
+}
+
+// ---------- WhatsApp-tekst ----------
+function billLinesText(b, bullet) {
+  const out = [];
+  (b.lines || []).filter(l => !lineIsBlank(l)).forEach(l => {
+    const calc = lineCalcText(l), c = compareFor(l);
+    out.push(bullet + (l.name || '(zonder omschrijving)') + ': ' + (calc ? calc + ' = ' : '') + (lineCounts(l) ? euro(l.total) : '–') + (c ? ' (' + cmpText(c) + ')' : ''));
+  });
+  if (cents(b.rounding)) out.push(bullet + 'Afronding: ' + euro(b.rounding));
+  return out;
+}
+function billShareText(b) {
+  const t = ['🧾 *' + (b.supplier || 'Onbekende winkel') + '* – ' + dateLabel(b.date)];
+  if ((b.sources || []).length > 1) t.push('(samengevoegd uit ' + b.sources.length + ' bonnen)');
+  t.push('');
+  billLinesText(b, '• ').forEach(x => t.push(x));
+  t.push('');
+  t.push('*Totaal: ' + euro(billTotalCents(b) / 100) + '*');
+  if (b.pinCheck && typeof b.pinCheck.amount === 'number') t.push('Betaald met pin: ' + euro(b.pinCheck.amount) + (cents(b.pinCheck.amount) === billTotalCents(b) ? ' ✓ Klopt' : ' (verschil ' + euro(Math.abs(cents(b.pinCheck.amount) - billTotalCents(b)) / 100) + ')'));
+  t.push('Prijzen inclusief btw.');
+  t.push('');
+  t.push('Gemaakt met Kassabon Analyse');
+  return t.join('\n');
+}
+function shareBill(how) { const b = findBill(viewBillId); if (!b) return; const txt = billShareText(b); if (how === 'wa') shareViaWhatsApp(txt); else shareTextOther(txt); }
+function shareViaWhatsApp(text) {
+  const q = encodeURIComponent(text), web = 'https://wa.me/?text=' + q;
+  const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (ios) {
+    let left = false; const onHide = () => { left = true; };
+    document.addEventListener('visibilitychange', onHide, { once: true });
+    window.location.href = 'whatsapp://send?text=' + q;
+    setTimeout(() => { document.removeEventListener('visibilitychange', onHide); if (!left && document.visibilityState === 'visible') window.location.href = web; }, 1200);
+  } else window.open(web, '_blank');
+}
+function copyText(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(text).then(() => true).catch(() => false);
+  try { const ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.left = '-9999px'; document.body.appendChild(ta); ta.select(); const ok = document.execCommand('copy'); ta.remove(); return Promise.resolve(!!ok); } catch (e) { return Promise.resolve(false); }
+}
+function shareTextOther(text) {
+  if (navigator.share) {
+    navigator.share({ text: text }).then(() => showToast('Gedeeld')).catch(() => copyText(text).then(ok => showToast(ok ? 'Tekst gekopieerd – plak hem in WhatsApp of een andere app' : 'Delen mislukt')));
+    return;
+  }
+  copyText(text).then(ok => showToast(ok ? 'Tekst gekopieerd – plak hem in WhatsApp of een andere app' : 'Kopiëren niet mogelijk op dit apparaat'));
+}
+function appShareText() {
+  return '*Kassabon Analyse* – handige app om je kassabonnen overzichtelijk te bewaren.\nOpen deze link in Safari of Chrome:\n' + APP_SHARE_URL + '\nTip: zet hem op je beginscherm via de deelknop → "Zet op beginscherm".';
+}
+
+// ---------- Periode versturen ----------
+let period = 'maand';
+function periodRange(p, now) {
+  now = now || new Date();
+  const y = now.getFullYear(), m = now.getMonth();
+  if (p === 'week') { const wd = (now.getDay() + 6) % 7; const from = new Date(y, m, now.getDate() - wd); const to = new Date(from.getFullYear(), from.getMonth(), from.getDate() + 6); return [dateIso(from), dateIso(to)]; }
+  if (p === 'maand') return [dateIso(new Date(y, m, 1)), dateIso(new Date(y, m + 1, 0))];
+  if (p === 'vorige') return [dateIso(new Date(y, m - 1, 1)), dateIso(new Date(y, m, 0))];
+  return [$('perFrom').value || '', $('perTo').value || ''];
+}
+function billsInRange(from, to) { return bills.filter(b => b.date && b.date >= from && b.date <= to).sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : (a.created || 0) - (b.created || 0))); }
+function periodText(from, to, list) {
+  const t = ['🧾 *Kassabonnen ' + dateLabel(from, false) + ' t/m ' + dateLabel(to, false) + '*', ''];
+  let sum = 0;
+  list.forEach(b => {
+    sum += billTotalCents(b);
+    t.push('*' + (b.supplier || 'Onbekende winkel') + '* – ' + dateLabel(b.date) + ((b.sources || []).length > 1 ? ' (' + b.sources.length + ' bonnen)' : ''));
+    billLinesText(b, '  • ').forEach(x => t.push(x));
+    t.push('  Totaal: ' + euro(billTotalCents(b) / 100));
+    t.push('');
+  });
+  t.push('*Samen: ' + list.length + (list.length === 1 ? ' bon' : ' bonnen') + ', ' + euro(sum / 100) + '*');
+  t.push('Prijzen inclusief btw.');
+  t.push('');
+  t.push('Gemaakt met Kassabon Analyse');
+  return t.join('\n');
+}
+function renderPeriod() {
+  document.querySelectorAll('#periodSeg button').forEach(b => b.classList.toggle('on', b.getAttribute('data-per') === period));
+  $('ownPeriod').classList.toggle('hidden', period !== 'eigen');
+  if (period === 'eigen' && !$('perFrom').value && !$('perTo').value) { $('perFrom').value = periodRange('maand')[0]; $('perTo').value = todayIso(); }
+  const r = periodRange(period), el = $('periodSummary');
+  if (!r[0] || !r[1]) { el.innerHTML = '<p>Kies een begin- en einddatum.</p>'; return; }
+  if (r[0] > r[1]) { el.innerHTML = '<div class="note warn">De begindatum ligt na de einddatum.</div>'; return; }
+  const list = billsInRange(r[0], r[1]);
+  const sum = list.reduce((s, b) => s + billTotalCents(b), 0);
+  let h = '<div class="note info" id="periodInfo">' + dateLabel(r[0], false) + ' t/m ' + dateLabel(r[1], false) + ': <b>' + list.length + (list.length === 1 ? ' bon' : ' bonnen') + '</b>, samen <b>' + euro(sum / 100) + '</b></div>';
+  if (!list.length) { el.innerHTML = h + '<p>Er zijn geen bonnen in deze periode.</p>'; return; }
+  h += list.map(b => '<div class="sum-row"><span>' + escapeHtml(b.supplier || 'Onbekend') + ', ' + dateLabel(b.date, false) + '</span><b>' + euro(billTotalCents(b) / 100) + '</b></div>').join('');
+  h += '<button type="button" class="big-button huge share-wa" id="sharePeriodWa" style="margin-top:0.5rem;" onclick="sharePeriod(\'wa\')">📤 Stuur via WhatsApp</button>' +
+    '<button type="button" class="big-button secondary" id="sharePeriodOther" onclick="sharePeriod(\'other\')">Andere app / kopiëren</button>' +
+    '<details><summary>Bekijk tekst</summary><pre class="share-text" id="periodShareText">' + escapeHtml(periodText(r[0], r[1], list)) + '</pre></details>';
+  el.innerHTML = h;
+}
+function sharePeriod(how) { const r = periodRange(period); const list = billsInRange(r[0], r[1]); if (!list.length) return; const t = periodText(r[0], r[1], list); if (how === 'wa') shareViaWhatsApp(t); else shareTextOther(t); }
+$('periodSeg').addEventListener('click', e => { const b = e.target.closest('[data-per]'); if (!b) return; period = b.getAttribute('data-per'); renderPeriod(); });
+['perFrom', 'perTo'].forEach(id => $(id).addEventListener('change', renderPeriod));
+
+// ---------- Controleren / aanpassen ----------
+// draft = { isNew, billId?, supplier, date, lines, rounding, receiptTotal, sources:[], notes:[], img?, isPin?, pinTotal? }
+let draft = null, queue = [], busy = false;
+function saveDraft() { try { if (draft || queue.length) localStorage.setItem(LS_DRAFT, JSON.stringify({ draft: draft, queue: queue })); else localStorage.removeItem(LS_DRAFT); } catch (e) {} }
+function knownSuppliers() {
+  const seen = {}, out = [];
+  const add = s => { const k = normSupplier(s); if (s && k && !seen[k]) { seen[k] = 1; out.push(s); } };
+  sortedBills().forEach(b => add(b.supplier)); queue.forEach(d => add(d.supplier)); if (draft) add(draft.supplier);
+  return out;
+}
+function startManual() {
+  draft = { isNew: true, supplier: '', date: todayIso(), lines: [], rounding: 0, receiptTotal: null, sources: [{ id: uid('s'), kind: 'hand' }], notes: [] };
+  queue = []; ensureBlankLine(draft); saveDraft(); renderEdit(); showTab('edit');
+  setTimeout(() => $('edSupplier').focus(), 50);
+}
+function editBill(id) {
+  const b = findBill(id); if (!b) return;
+  draft = JSON.parse(JSON.stringify(b)); draft.isNew = false; draft.billId = id; draft.notes = [];
+  ensureBlankLine(draft); saveDraft(); renderEdit(); showTab('edit');
+}
+function lineHtml(l, last) {
+  const blank = lineIsBlank(l), kg = l.unit === 'kg', f = calcFlag(l), c = compareFor(l);
+  return '<div class="ln' + (blank ? ' blank' : '') + '" data-ln="' + l.id + '">' +
+    '<div class="ln-top"><input type="text" data-f="name" placeholder="' + (blank && last ? 'Nieuwe regel: omschrijving' : 'Omschrijving') + '" value="' + escapeHtml(l.name) + '" aria-label="Omschrijving">' +
+    '<button type="button" class="del-btn" data-delln="' + l.id + '" aria-label="Regel wissen">✕</button></div>' +
+    '<div class="ln-nums">' +
+      '<label><span data-lbl="qty">' + (kg ? 'Gewicht kg' : 'Aantal') + '</span><input type="text" inputmode="decimal" data-f="qty" value="' + escapeHtml(qtyStr(l.qty, l.unit)) + '" placeholder="1"></label>' +
+      '<span class="pills ln-unit" role="group" aria-label="Eenheid"><button type="button" data-unit="st" class="' + (kg ? '' : 'on') + '">stuks</button><button type="button" data-unit="kg" class="' + (kg ? 'on' : '') + '">kg</button></span>' +
+      '<label><span data-lbl="price">' + (kg ? 'Prijs/kg €' : 'Prijs/stuk €') + '</span><input type="text" inputmode="decimal" data-f="price" value="' + escapeHtml(numStr(l.unitPrice, 2)) + '"></label>' +
+      '<label><span>Totaal €</span><input type="text" inputmode="decimal" data-f="total" value="' + escapeHtml(numStr(l.total, 2)) + '"></label>' +
+    '</div>' +
+    '<div class="flag ln-flag' + (f ? '' : ' hidden') + '">' + (f ? '⚠ ' + escapeHtml(f) + ' Pas aan als het niet klopt.' : '') + '</div>' +
+    '<details class="ln-pkg"' + (l.pkgSize ? ' open' : '') + '><summary>Inhoud verpakking (om te vergelijken)</summary><div class="pkg-row">' +
+      '<input type="text" inputmode="decimal" data-f="pkg" value="' + escapeHtml(l.pkgSize ? String(l.pkgSize).replace('.', ',') : '') + '" placeholder="500" aria-label="Inhoud">' +
+      '<span class="pills" role="group" aria-label="Eenheid verpakking">' + PKG_UNITS.map(u => '<button type="button" data-pku="' + u[0] + '" class="' + (l.pkgUnit === u[0] ? 'on' : '') + '">' + u[1] + '</button>').join('') + '</span>' +
+    '</div></details>' +
+    '<div class="ln-out"><span class="cmp ln-cmp' + (c ? '' : ' hidden') + '">' + cmpText(c) + '</span></div>' +
+  '</div>';
+}
+function renderLines() { const ls = draft.lines; $('edLines').innerHTML = ls.map((l, i) => lineHtml(l, i === ls.length - 1)).join(''); renderEditTotals(); }
+function renderEditTotals() {
+  const b = draft;
+  $('edTotals').innerHTML = '<div class="sum-row"><span>Regels samen</span><b id="edLinesSum">' + euro(billLinesCents(b) / 100) + '</b></div>' +
+    '<div class="two" style="margin-top:0.3rem;"><label><span class="fld-label">Afronding €</span><input type="text" inputmode="decimal" id="edRounding" value="' + (cents(b.rounding) ? numStr(b.rounding, 2) : '') + '" placeholder="0,00"></label>' +
+    '<label><span class="fld-label">Totaal op de bon €</span><input type="text" inputmode="decimal" id="edReceiptTotal" value="' + (typeof b.receiptTotal === 'number' ? numStr(b.receiptTotal, 2) : '') + '" placeholder="leeg = niet"></label></div>' +
+    '<div class="grand"><span>Totaal</span><span id="edTotal">' + euro(billTotalCents(b) / 100) + '</span></div><div id="edCheck">' + checkHtml(b) + '</div>';
+}
+function updateEditTotalsOnly() { $('edLinesSum').textContent = euro(billLinesCents(draft) / 100); $('edTotal').textContent = euro(billTotalCents(draft) / 100); $('edCheck').innerHTML = checkHtml(draft); }
+function renderEdit() {
+  const d = draft, isPin = !!d.isPin;
+  $('editTitle').textContent = d.isNew ? (isPin ? '💳 Pinbon' : 'Bon controleren') : 'Bon aanpassen';
+  let notes = (d.notes || []).map(n => '<div class="note ' + n[0] + '">' + n[1] + '</div>').join('');
+  if (queue.length) notes += '<div class="note info" id="queueNote">Hierna ' + (queue.length === 1 ? 'volgt nog 1 bon' : 'volgen nog ' + queue.length + ' bonnen') + '.</div>';
+  $('editNotes').innerHTML = notes;
+  $('editImg').innerHTML = d.img ? '<img class="ocr-img" id="ocrImg" alt="Foto van deze bon" src="' + d.img + '"><p class="small-text" style="margin:0 0 0.4rem;text-align:center;">Vergelijk met de foto. Tik op de foto om hem groot te zien.</p>' +
+    (d.fromSplit ? '<button class="link-button" id="wholeBtn" onclick="readWhole()">Was dit één bon? Lees de hele foto opnieuw</button>' : '') : '';
+  $('editForm').classList.toggle('hidden', isPin);
+  $('linesCard').classList.toggle('hidden', isPin);
+  $('pinPanel').innerHTML = isPin ? pinPanelHtml() : '';
+  $('edSupplier').value = d.supplier || '';
+  $('edDate').value = d.date || '';
+  $('supplierList').innerHTML = knownSuppliers().map(s => '<option value="' + escapeHtml(s) + '">').join('');
+  if (!isPin) renderLines();
+  $('saveBtn').textContent = isPin ? '✓ Klaar' : d.isNew ? (queue.length ? '✓ Bewaren en volgende' : '✓ Bewaren') : '✓ Klaar';
+  $('skipBtn').textContent = d.isNew ? (queue.length ? 'Deze overslaan' : 'Annuleren') : 'Annuleren';
+}
+// ---------- Pinbon ----------
+let pinTarget = null;
+function pinCandidates() { const d = draft, same = sortedBills().filter(b => d.date && b.date === d.date); return same.length ? same : sortedBills().slice(0, 8); }
+function pinResultHtml() {
+  const t = findBill(pinTarget), d = draft;
+  if (!t || typeof d.pinTotal !== 'number') return '';
+  const diff = billTotalCents(t) - cents(d.pinTotal);
+  return diff === 0 ? '<div class="note ok" id="pinResult">✓ Klopt: de bon is ' + euro(billTotalCents(t) / 100) + ', gepind ' + euro(d.pinTotal) + '.</div>'
+    : '<div class="note bad" id="pinResult">Verschil ' + euro(Math.abs(diff) / 100) + ': de bon is ' + euro(billTotalCents(t) / 100) + ', gepind ' + euro(d.pinTotal) + '.</div>';
+}
+function pinPanelHtml() {
+  const d = draft, list = pinCandidates();
+  if (!pinTarget || !list.some(b => b.id === pinTarget)) { const pref = list.find(b => d.supplier && normSupplier(b.supplier) === normSupplier(d.supplier)) || list[0]; pinTarget = pref ? pref.id : null; }
+  let h = '<div class="note info" id="pinNote">💳 <b>Dit is een pinbon: controleer tegen totaal.</b><br>Gepind: <b>' + (typeof d.pinTotal === 'number' ? euro(d.pinTotal) : '?') + '</b>' + (d.date ? ' op ' + dateLabel(d.date) : '') + '</div>';
+  h += '<label class="fld-label" for="pinTotalInput">Bedrag op de pinbon €</label><input type="text" inputmode="decimal" id="pinTotalInput" value="' + (typeof d.pinTotal === 'number' ? numStr(d.pinTotal, 2) : '') + '">';
+  if (!list.length) return h + '<p>Er is nog geen bon om mee te vergelijken.</p><button class="link-button" onclick="pinAsReceipt()">Dit is geen pinbon – als gewone bon invoeren</button>';
+  h += '<div class="fld-label" style="margin-top:0.5rem;">Vergelijk met de bon van:</div>';
+  list.forEach(b => { h += '<button type="button" class="pick-bill' + (b.id === pinTarget ? ' on' : '') + '" data-pinbill="' + b.id + '"><b>' + escapeHtml(b.supplier || 'Onbekend') + '</b>, ' + dateLabel(b.date, false) + ' – ' + euro(billTotalCents(b) / 100) + ((b.sources || []).length > 1 ? ' (' + b.sources.length + ' bonnen)' : '') + '</button>'; });
+  h += '<div id="pinResultBox">' + pinResultHtml() + '</div>';
+  h += '<button class="link-button" onclick="pinAsReceipt()">Dit is geen pinbon – als gewone bon invoeren</button>';
+  return h;
+}
+function pinAsReceipt() { draft.isPin = false; ensureBlankLine(draft); saveDraft(); renderEdit(); }
+document.addEventListener('click', e => {
+  const pb = e.target.closest('[data-pinbill]'); if (pb) { pinTarget = pb.getAttribute('data-pinbill'); $('pinPanel').innerHTML = pinPanelHtml(); return; }
+  if (e.target.id === 'ocrImg' && draft && draft.img) openViewerSrc([draft.img]);
+});
+document.addEventListener('input', e => {
+  if (e.target.id !== 'pinTotalInput') return;
+  const v = parseNum(e.target.value); draft.pinTotal = v == null || isNaN(v) ? null : Math.round(v * 100) / 100; saveDraft();
+  const box = $('pinResultBox'); if (box) box.innerHTML = pinResultHtml();
+});
+function savePin() {
+  const d = draft, t = findBill(pinTarget);
+  if (!t) { showToast('Kies eerst een bon om mee te vergelijken'); return; }
+  if (typeof d.pinTotal !== 'number') { showToast('Vul het bedrag van de pinbon in'); return; }
+  const pid = d.sources[0] && d.sources[0].photoId;
+  t.pinCheck = { amount: d.pinTotal, date: d.date || '', photoId: pid || null };
+  if (pid) { t.extraPhotos = (t.extraPhotos || []).concat([pid]); }
+  t.updated = Date.now(); saveBills();
+  const ok = cents(t.pinCheck.amount) === billTotalCents(t);
+  draft = null;
+  if (queue.length) { nextFromQueue(); } else { saveDraft(); openBill(t.id); }
+  showToast(ok ? '💳 Pinbon klopt' : '💳 Pinbon wijkt af', 2500);
+}
+// ---------- Regels bewerken ----------
+function lineOf(el) { const box = el.closest('[data-ln]'); if (!box || !draft) return null; const id = box.getAttribute('data-ln'); return { box: box, l: draft.lines.find(x => x.id === id) }; }
+function refreshLineBox(box, l) {
+  const f = calcFlag(l), c = compareFor(l);
+  const fe = box.querySelector('.ln-flag'); fe.classList.toggle('hidden', !f); fe.textContent = f ? '⚠ ' + f + ' Pas aan als het niet klopt.' : '';
+  const ce = box.querySelector('.ln-cmp'); ce.classList.toggle('hidden', !c); ce.textContent = cmpText(c);
+  box.classList.toggle('blank', lineIsBlank(l));
+}
+function afterLineChange(box, l) {
+  refreshLineBox(box, l);
+  const ls = draft.lines;
+  if (ls[ls.length - 1] === l && !lineIsBlank(l)) { // altijd een lege regel onderaan
+    const nl = newLine(); ls.push(nl);
+    box.querySelector('[data-f=name]').placeholder = 'Omschrijving';
+    $('edLines').insertAdjacentHTML('beforeend', lineHtml(nl, true));
+  }
+  updateEditTotalsOnly(); saveDraft();
+}
+$('edLines').addEventListener('input', e => {
+  const t = e.target, f = t.getAttribute('data-f'); const o = lineOf(t); if (!o || !o.l) return;
+  const l = o.l, v = parseNum(t.value);
+  if (f === 'name') l.name = t.value;
+  else if (f === 'qty' || f === 'price') {
+    if (v !== null && isNaN(v)) return;
+    if (f === 'qty') l.qty = v; else l.unitPrice = v == null ? null : Math.round(v * 10000) / 10000;
+    const q = l.qty == null ? (l.unitPrice != null ? 1 : null) : l.qty;
+    if (q != null && l.unitPrice != null) { l.total = Math.round(q * l.unitPrice * 100) / 100; o.box.querySelector('[data-f=total]').value = numStr(l.total, 2); }
+  } else if (f === 'total') {
+    if (v !== null && isNaN(v)) return;
+    l.total = v == null ? null : Math.round(v * 100) / 100;
+    if (l.total != null && l.unitPrice == null) { l.unitPrice = Math.round(l.total / (l.qty || 1) * 100) / 100; o.box.querySelector('[data-f=price]').value = numStr(l.unitPrice, 2); }
+  } else if (f === 'pkg') {
+    if (v !== null && isNaN(v)) return;
+    l.pkgSize = v;
+    if (v && !l.pkgUnit) { l.pkgUnit = 'g'; o.box.querySelector('[data-pku=g]').classList.add('on'); }
+  }
+  refreshCmp(l); afterLineChange(o.box, l);
+});
+$('edLines').addEventListener('click', e => {
+  const u = e.target.closest('[data-unit]');
+  if (u) {
+    const o = lineOf(u); if (!o || !o.l) return; o.l.unit = u.getAttribute('data-unit');
+    o.box.querySelectorAll('[data-unit]').forEach(b => b.classList.toggle('on', b === u));
+    const kg = o.l.unit === 'kg'; o.box.querySelector('[data-lbl=qty]').textContent = kg ? 'Gewicht kg' : 'Aantal'; o.box.querySelector('[data-lbl=price]').textContent = kg ? 'Prijs/kg €' : 'Prijs/stuk €';
+    refreshCmp(o.l); afterLineChange(o.box, o.l); return;
+  }
+  const p = e.target.closest('[data-pku]');
+  if (p) {
+    const o = lineOf(p); if (!o || !o.l) return; const k = p.getAttribute('data-pku'); o.l.pkgUnit = o.l.pkgUnit === k ? null : k;
+    o.box.querySelectorAll('[data-pku]').forEach(b => b.classList.toggle('on', b.getAttribute('data-pku') === o.l.pkgUnit));
+    refreshCmp(o.l); afterLineChange(o.box, o.l); return;
+  }
+  const d = e.target.closest('[data-delln]');
+  if (d) {
+    const id = d.getAttribute('data-delln'), idx = draft.lines.findIndex(x => x.id === id); if (idx < 0) return;
+    const l = draft.lines[idx];
+    if (lineIsBlank(l) && idx === draft.lines.length - 1) { showToast('Dit is de lege regel om in te vullen'); return; }
+    draft.lines.splice(idx, 1); ensureBlankLine(draft); renderLines(); saveDraft();
+    if (!lineIsBlank(l)) showUndo('Regel “' + (l.name || 'zonder naam') + '” gewist', () => { if (!draft) return; draft.lines.splice(Math.min(idx, draft.lines.length), 0, l); renderLines(); saveDraft(); showToast('Regel teruggezet'); }, null, 6000);
+  }
+});
+$('edTotals').addEventListener('input', e => {
+  const v = parseNum(e.target.value); if (v !== null && isNaN(v)) return;
+  if (e.target.id === 'edRounding') draft.rounding = v == null ? 0 : Math.round(v * 100) / 100;
+  else if (e.target.id === 'edReceiptTotal') draft.receiptTotal = v == null ? null : Math.round(v * 100) / 100;
+  updateEditTotalsOnly(); saveDraft();
+});
+$('edSupplier').addEventListener('input', () => { if (draft) { draft.supplier = $('edSupplier').value; saveDraft(); } });
+$('edDate').addEventListener('change', () => { if (draft) { draft.date = $('edDate').value; saveDraft(); } });
+function addLine(focus) {
+  ensureBlankLine(draft);
+  let last = draft.lines[draft.lines.length - 1];
+  if (!document.querySelector('[data-ln="' + last.id + '"]')) renderLines();
+  const el = document.querySelector('[data-ln="' + last.id + '"] [data-f=name]');
+  if (focus && el) { el.focus(); el.scrollIntoView({ block: 'center' }); }
+}
+// ---------- Bewaren + automatisch samenvoegen ----------
+function billKey(b) { return normSupplier(b.supplier) + '|' + (b.date || ''); }
+function newBillFrom(d, src, keepApart) {
+  const b = { id: uid('b'), supplier: d.supplier, date: d.date, time: d.time || '', lines: d.lines, rounding: d.rounding || 0, receiptTotal: typeof d.receiptTotal === 'number' ? d.receiptTotal : null, sources: [src], created: Date.now(), updated: Date.now() };
+  if (keepApart) b.keepApart = true;
+  return b;
+}
+function saveEdit() {
+  if (!draft) return;
+  if (draft.isPin) return savePin();
+  draft.supplier = $('edSupplier').value.trim(); draft.date = $('edDate').value || '';
+  const d = draft;
+  cleanLines(d);
+  if (!d.isNew) {
+    const b = findBill(d.billId);
+    if (b) { b.supplier = d.supplier; b.date = d.date; b.lines = d.lines; b.rounding = d.rounding || 0; b.receiptTotal = typeof d.receiptTotal === 'number' ? d.receiptTotal : null; b.updated = Date.now(); saveBills(); }
+    draft = null; saveDraft(); openBill(d.billId); showToast('Bewaard'); return;
+  }
+  if (!d.lines.length && !d.supplier) { showToast('Vul eerst een winkel of een regel in'); ensureBlankLine(d); return; }
+  const src = Object.assign({ id: uid('s'), kind: 'hand' }, d.sources[0] || {});
+  src.lineIds = d.lines.map(l => l.id); src.total = typeof d.receiptTotal === 'number' ? d.receiptTotal : null; src.rounding = d.rounding || 0; src.addedAt = Date.now();
+  const target = d.supplier && d.date ? sortedBills().find(b => !b.keepApart && billKey(b) === billKey(d)) : null;
+  if (target) {
+    const before = JSON.parse(JSON.stringify(target));
+    if (!target.sources || !target.sources.length) target.sources = [{ id: uid('s'), kind: 'hand', lineIds: (target.lines || []).map(l => l.id), total: target.receiptTotal, rounding: target.rounding || 0 }];
+    target.lines = (target.lines || []).concat(d.lines);
+    target.rounding = Math.round(((target.rounding || 0) + (d.rounding || 0)) * 100) / 100;
+    target.receiptTotal = typeof target.receiptTotal === 'number' && typeof d.receiptTotal === 'number' ? Math.round((target.receiptTotal + d.receiptTotal) * 100) / 100 : null;
+    target.sources.push(src); target.updated = Date.now();
+    saveBills();
+    const id = target.id;
+    const msg = 'Samengevoegd met de bon van ' + target.supplier + ' van ' + dateLabel(target.date, false) + ' (nu ' + target.sources.length + ' bonnen)';
+    finishSave(id, msg, () => {
+      const t = findBill(id); if (!t) return;
+      Object.keys(t).forEach(k => delete t[k]); Object.assign(t, before);
+      const nb = newBillFrom(d, src, true); bills.push(nb); saveBills();
+      if (curTab === 'bon') openBill(viewBillId === id ? nb.id : viewBillId); else if (curTab === 'bonnen') renderList();
+      showToast('Weer apart gezet');
+    });
+  } else {
+    const nb = newBillFrom(d, src, false); bills.push(nb); saveBills();
+    finishSave(nb.id, 'Bon bewaard', null);
+  }
+}
+function finishSave(id, msg, undoMerge) {
+  draft = null;
+  if (queue.length) nextFromQueue(); else { saveDraft(); openBill(id); }
+  if (undoMerge) showUndo(msg, undoMerge, null, 10000); else showToast(msg);
+}
+function cancelEdit() {
+  const d = draft; draft = null;
+  if (d && d.isNew) {
+    const ids = srcPhotoIds(d.sources);
+    if (queue.length) nextFromQueue(); else { saveDraft(); showTab('bonnen'); }
+    purgePhotos(ids); return;
+  }
+  saveDraft();
+  if (d && d.billId) openBill(d.billId); else showTab('bonnen');
+}
+function nextFromQueue() { draft = queue.shift(); pinTarget = null; if (!draft.isPin) ensureBlankLine(draft); saveDraft(); renderEdit(); showTab('edit'); }
+// Splits weer: de laatst toegevoegde bon wordt weer een aparte bon
+function splitBill(id) {
+  const b = findBill(id); if (!b || !b.sources || b.sources.length < 2) return;
+  const src = b.sources[b.sources.length - 1], ids = src.lineIds || [];
+  const moved = b.lines.filter(l => ids.indexOf(l.id) >= 0);
+  b.lines = b.lines.filter(l => ids.indexOf(l.id) < 0);
+  b.sources = b.sources.slice(0, -1);
+  b.rounding = Math.round(((b.rounding || 0) - (src.rounding || 0)) * 100) / 100;
+  b.receiptTotal = b.sources.every(s => typeof s.total === 'number') ? Math.round(b.sources.reduce((s, x) => s + x.total, 0) * 100) / 100 : null;
+  b.updated = Date.now();
+  const nb = { id: uid('b'), supplier: b.supplier, date: b.date, lines: moved, rounding: src.rounding || 0, receiptTotal: typeof src.total === 'number' ? src.total : null, sources: [src], created: Date.now(), updated: Date.now(), keepApart: true };
+  bills.push(nb); saveBills(); renderBill(); showToast('Gesplitst: de laatste bon staat weer apart', 2500);
+}
+
+// ---------- Foto's bekijken ----------
+let viewerList = [], viewerIdx = 0;
+function openViewer(billId) {
+  const b = findBill(billId); if (!b) return;
+  Promise.all(billPhotoIds(b).map(getPhoto)).then(ps => { const srcs = ps.filter(Boolean).map(p => p.data); if (!srcs.length) { showToast('Foto niet gevonden'); return; } openViewerSrc(srcs); });
+}
+function openViewerSrc(srcs) { viewerList = srcs; viewerIdx = 0; showViewerImg(); $('viewer').classList.remove('hidden'); }
+function showViewerImg() {
+  $('viewerImg').src = viewerList[viewerIdx];
+  $('viewerNav').innerHTML = viewerList.length > 1 ? '<button class="big-button secondary" onclick="stepViewer(-1)">← Vorige</button><button class="big-button secondary" onclick="stepViewer(1)">Volgende →</button>' : '';
+}
+function stepViewer(d) { viewerIdx = (viewerIdx + d + viewerList.length) % viewerList.length; showViewerImg(); }
+function closeViewer() { $('viewer').classList.add('hidden'); $('viewerImg').removeAttribute('src'); }
+function askBig(text, o) {
+  o = o || {};
+  return new Promise(res => {
+    $('askText').textContent = text; $('askSub').textContent = o.sub || ''; $('askSub').classList.toggle('hidden', !o.sub);
+    $('askYes').textContent = o.yes || 'Ja'; $('askNo').textContent = o.no || 'Nee';
+    $('askBox').classList.remove('hidden');
+    const done = v => { $('askBox').classList.add('hidden'); $('askYes').onclick = $('askNo').onclick = null; res(v); };
+    $('askYes').onclick = () => done(true); $('askNo').onclick = () => done(false);
+  });
+}
+
+// ---------- Foto's en PDF lezen (alles op de telefoon; alleen de leesprogramma's komen van jsDelivr) ----------
+const TESS_URL = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+const PDFJS_URL = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/legacy/build/pdf.min.mjs';
+const PDFJS_WORKER_URL = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/legacy/build/pdf.worker.min.mjs';
+let tessP = null, workerP = null, ocrProgress = null, pdfjsP = null;
+function loadTesseract() {
+  if (window.Tesseract) return Promise.resolve();
+  if (tessP) return tessP;
+  tessP = new Promise((resolve, reject) => { const s = document.createElement('script'); s.src = TESS_URL; s.onload = () => resolve(); s.onerror = () => { tessP = null; s.remove(); reject(new Error('tekstherkenning kon niet geladen worden')); }; document.head.appendChild(s); });
+  return tessP;
+}
+function getWorker() {
+  if (workerP) return workerP;
+  workerP = loadTesseract().then(() => Tesseract.createWorker(['nld', 'eng'], 1, { logger: m => { if (ocrProgress) ocrProgress(m); } }))
+    .then(w => w.setParameters({ preserve_interword_spaces: '1' }).then(() => w)).catch(err => { workerP = null; throw err; });
+  return workerP;
+}
+function loadPdfJs() {
+  if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+  if (pdfjsP) return pdfjsP;
+  pdfjsP = import(PDFJS_URL).then(lib => { const api = lib && (lib.GlobalWorkerOptions ? lib : lib.default); if (!api || !api.getDocument) throw new Error('PDF-lezer niet beschikbaar'); api.GlobalWorkerOptions.workerSrc = PDFJS_WORKER_URL; window.pdfjsLib = api; return api; })
+    .catch(err => { pdfjsP = null; throw err; });
+  return pdfjsP;
+}
+function isPdfFile(f) { return !!f && (/pdf/i.test(f.type || '') || /\.pdf$/i.test(f.name || '')); }
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const str = typeof src === 'string', url = str ? src : URL.createObjectURL(src), img = new Image();
+    img.onload = () => { if (!str) URL.revokeObjectURL(url); resolve(img); };
+    img.onerror = () => { if (!str) URL.revokeObjectURL(url); reject(new Error('kan foto niet lezen')); };
+    img.src = url;
+  });
+}
+function drawScaled(img, sx, sy, sw, sh, scale) {
+  const c = document.createElement('canvas');
+  c.width = Math.max(1, Math.round(sw * scale)); c.height = Math.max(1, Math.round(sh * scale));
+  const ctx = c.getContext('2d'); ctx.imageSmoothingEnabled = true; if ('imageSmoothingQuality' in ctx) ctx.imageSmoothingQuality = 'high';
+  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
+  ctx.drawImage(img, sx, sy, sw, sh, 0, 0, c.width, c.height);
+  return c;
+}
+function grayOf(ctx, W, H) { const p = ctx.getImageData(0, 0, W, H).data, g = new Float32Array(W * H); for (let i = 0; i < W * H; i++) g[i] = 0.299 * p[i * 4] + 0.587 * p[i * 4 + 1] + 0.114 * p[i * 4 + 2]; return g; }
+function localMean(g, W, H, R) {
+  const I = new Float64Array((W + 1) * (H + 1)), M = new Float32Array(W * H);
+  for (let y = 0; y < H; y++) { let s = 0; for (let x = 0; x < W; x++) { s += g[y * W + x]; I[(y + 1) * (W + 1) + x + 1] = I[y * (W + 1) + x + 1] + s; } }
+  for (let y = 0; y < H; y++) { const y0 = Math.max(0, y - R), y1 = Math.min(H, y + R + 1); for (let x = 0; x < W; x++) { const x0 = Math.max(0, x - R), x1 = Math.min(W, x + R + 1);
+    M[y * W + x] = (I[y1 * (W + 1) + x1] - I[y0 * (W + 1) + x1] - I[y1 * (W + 1) + x0] + I[y0 * (W + 1) + x0]) / ((x1 - x0) * (y1 - y0)); } }
+  return M;
+}
+// Vage thermische bon: achtergrond gelijk maken en contrast omhoog (helpt Tesseract veel)
+function enhance(c, gain, rdiv) {
+  gain = gain || 4; rdiv = rdiv || 25;
+  const W = c.width, H = c.height, ctx = c.getContext('2d');
+  const g = grayOf(ctx, W, H), M = localMean(g, W, H, Math.max(8, Math.round(Math.min(W, H) / rdiv)));
+  const d = ctx.getImageData(0, 0, W, H), p = d.data;
+  for (let i = 0; i < W * H; i++) { let v = 255 - Math.max(0, M[i] - g[i]) * gain; v = v < 0 ? 0 : v > 255 ? 255 : v; p[i * 4] = p[i * 4 + 1] = p[i * 4 + 2] = v; }
+  ctx.putImageData(d, 0, 0); return c;
+}
+// Meer bonnen naast elkaar op één foto? Zoek kolommen met tekst, gescheiden door lege stroken.
+function findSlips(img) {
+  const W0 = img.naturalWidth, H0 = img.naturalHeight, s = Math.min(1, 700 / W0);
+  const c = drawScaled(img, 0, 0, W0, H0, s), W = c.width, H = c.height;
+  const g = grayOf(c.getContext('2d'), W, H), M = localMean(g, W, H, Math.max(6, Math.round(W / 40)));
+  const ink = new Uint8Array(W * H);
+  for (let i = 0; i < W * H; i++) ink[i] = (M[i] - g[i] > 22) ? 1 : 0;
+  const maxRun = Math.max(12, Math.round(H * 0.05)); // lange verticale strepen (randen van het papier) tellen niet mee
+  for (let x = 0; x < W; x++) { let y = 0; while (y < H) { if (!ink[y * W + x]) { y++; continue; } let e = y; while (e < H && ink[e * W + x]) e++; if (e - y > maxRun) for (let k = y; k < e; k++) ink[k * W + x] = 0; y = e; } }
+  const maxRunX = Math.max(20, Math.round(W * 0.1)); // lange liggende lijnen (rand van tafel/papier) ook niet
+  for (let y = 0; y < H; y++) { let x = 0; while (x < W) { if (!ink[y * W + x]) { x++; continue; } let e = x; while (e < W && ink[y * W + e]) e++; if (e - x > maxRunX) for (let k = x; k < e; k++) ink[y * W + k] = 0; x = e; } }
+  const col = new Float32Array(W);
+  for (let x = 0; x < W; x++) { let n = 0; for (let y = 0; y < H; y++) n += ink[y * W + x]; col[x] = n; }
+  const sm = new Float32Array(W);
+  for (let x = 0; x < W; x++) { let a = 0, n = 0; for (let k = -2; k <= 2; k++) if (x + k >= 0 && x + k < W) { a += col[x + k]; n++; } sm[x] = a / n; }
+  const thr = Math.max(1.5, H * 0.004), gapMin = Math.round(W * 0.035);
+  const runs = []; let x = 0;
+  while (x < W) { if (sm[x] < thr) { x++; continue; } let e = x; while (e < W && sm[e] >= thr) e++; runs.push([x, e]); x = e; }
+  const merged = [];
+  runs.forEach(r => { const last = merged[merged.length - 1]; if (last && r[0] - last[1] < gapMin) last[1] = r[1]; else merged.push(r.slice()); });
+  const inkOf = r => { let n = 0; for (let x = r[0]; x < r[1]; x++) n += col[x]; return n; };
+  let segs = merged.filter(r => r[1] - r[0] >= W * 0.1);
+  const maxInk = Math.max.apply(null, segs.map(inkOf).concat([1]));
+  segs = segs.filter(r => inkOf(r) >= maxInk * 0.15);
+  if (segs.length < 2 || segs.length > 6) return null;
+  return segs.map(r => {
+    // rijen met tekst; neem het grootste aaneengesloten blok (losse vlekken boven/onder vallen weg)
+    const segW = r[1] - r[0], rowThr = Math.max(2, segW * 0.02), rows = [];
+    for (let y = 0; y < H; y++) { let n = 0; for (let x = r[0]; x < r[1]; x++) n += ink[y * W + x]; rows.push(n >= rowThr ? n : 0); }
+    const gap = Math.round(H * 0.06), blocks = []; let y = 0;
+    while (y < H) { if (!rows[y]) { y++; continue; } let e = y, last = y, sum = 0; while (e < H && e - last <= gap) { if (rows[e]) { last = e; sum += rows[e]; } e++; } blocks.push([y, last, sum]); y = last + 1; }
+    const best = blocks.sort((a, b) => b[2] - a[2])[0] || [0, H - 1, 0];
+    const padX = Math.round(W * 0.02), padY = Math.round(H * 0.03);
+    const x0 = Math.max(0, r[0] - padX), x1 = Math.min(W, r[1] + padX), y0 = Math.max(0, best[0] - padY), y1 = Math.min(H, best[1] + padY);
+    return { x: x0 / s, y: y0 / s, w: (x1 - x0) / s, h: (y1 - y0) / s };
+  });
+}
+// variant: [doelbreedte, contrast, straal-deler]
+const OCR_VARIANTS = [[1600, 4, 25, '6'], [1060, 5, 60, '6'], [1060, 5, 25, '4']];
+function ocrCanvasFor(img, r, v) {
+  v = v || OCR_VARIANTS[0];
+  let scale = Math.min(4, Math.max(0.4, v[0] / r.w));
+  if (r.w * scale * r.h * scale > 12000000) scale = Math.sqrt(12000000 / (r.w * r.h));
+  return enhance(drawScaled(img, r.x, r.y, r.w, r.h, scale), v[1], v[2]);
+}
+function parsedSumCents(p) { return p.lines.reduce((a, l) => a + cents(l.total), 0) + cents(p.rounding); }
+function scoreParse(p) {
+  let s = p.lines.length * 2 + (p.supplier ? 2 : 0) + (p.date ? 3 : 0);
+  p.lines.forEach(l => { if (!l.flag) s += 2; if (l.name) s += 1; });
+  if (p.total != null) { s += 3; if (p.lines.length && parsedSumCents(p) === cents(p.total)) s += 12; }
+  if (p.isPin) s += 8;
+  return s;
+}
+// Meer manieren van lezen (andere vergroting/contrast, Tesseract psm 6 en 4); de beste uitkomst telt.
+// Klopt de som van de regels al met het totaal (of is het een pinbon), dan stoppen we eerder.
+function goodEnough(p) { return (p.isPin && p.pinCands && p.pinCands.length >= 3) || (p.total != null && p.lines.length && parsedSumCents(p) === cents(p.total)); }
+function ocrRead(worker, source, known, onPass) {
+  let best = null;
+  const variants = source.canvas ? [null] : OCR_VARIANTS;
+  let chain = Promise.resolve();
+  variants.forEach((v, i) => {
+    chain = chain.then(() => {
+      if (best && goodEnough(best)) return;
+      if (onPass) onPass(i, variants.length);
+      const canvas = source.canvas ? source.canvas : ocrCanvasFor(source.img, source.r, v);
+      return worker.setParameters({ tessedit_pageseg_mode: v ? v[3] : '6' }).then(() => worker.recognize(canvas)).then(res => {
+        const p = ReceiptParser.parse(res.data.text, known); p.raw = res.data.text; p.score = scoreParse(p);
+        const cands = (best && best.pinCands || []).concat(p.isPin && p.pinTotal != null ? [p.pinTotal] : []);
+        if (!best || p.score > best.score) best = p;
+        best.pinCands = cands;
+        if (best.isPin && cands.length) { // pinbedrag: het bedrag dat het vaakst gelezen is
+          const n = c => cands.filter(x => cents(x) === cents(c)).length;
+          best.pinTotal = cands.slice().sort((a, b) => n(b) - n(a))[0];
+        }
+      });
+    });
+  });
+  return chain.then(() => best);
+}
+const OCR_STATUS = { 'loading tesseract core': 'Tekstherkenning laden…', 'initializing tesseract': 'Tekstherkenning starten…', 'loading language traineddata': 'Taalgegevens laden (Nederlands + Engels)…', 'loading language traineddata (from cache)': 'Taalgegevens laden…', 'initializing api': 'Voorbereiden…' };
+function setOcrUi(text, frac) { $('ocrBox').classList.remove('hidden'); $('ocrStatus').textContent = text; if (frac != null) $('ocrBar').style.width = Math.round(frac * 100) + '%'; }
+function pickReceipt() { showTab('nieuw'); if (!busy) $('receiptInput').click(); }
+function handleReceiptFiles(input) {
+  const files = Array.from(input.files || []); input.value = '';
+  if (!files.length || busy) return;
+  busy = true; $('pickBtn').disabled = true; showTab('nieuw');
+  const drafts = [];
+  let chain = Promise.resolve();
+  files.forEach((f, i) => { chain = chain.then(() => (isPdfFile(f) ? readPdf(f, i, files.length) : readPhoto(f, i, files.length))).then(ds => { ds.forEach(d => drafts.push(d)); }).catch(err => { drafts.push(errorDraft(f, err)); }); });
+  return chain.then(() => { busy = false; $('pickBtn').disabled = false; $('ocrBox').classList.add('hidden'); ocrProgress = null; startQueue(drafts); });
+}
+function startQueue(drafts) {
+  if (!drafts.length) return;
+  // gewone bonnen eerst, pinbonnen daarna (die controleren tegen de samengevoegde bon)
+  drafts = drafts.filter(d => !d.isPin).concat(drafts.filter(d => d.isPin));
+  queue = drafts; nextFromQueue();
+}
+function baseDraft(kind, photoId) { return { isNew: true, supplier: '', date: '', lines: [], rounding: 0, receiptTotal: null, sources: [{ id: uid('s'), kind: kind, photoId: photoId || null }], notes: [] }; }
+function errorDraft(f, err) {
+  const pdf = isPdfFile(f), d = baseDraft(pdf ? 'pdf' : 'foto', null);
+  d.date = todayIso();
+  d.notes.push(['bad', 'Deze ' + (pdf ? 'PDF' : 'foto') + ' kon niet gelezen worden (' + escapeHtml(err && err.message || err) + '). Is er internet? Je kunt de bon hieronder zelf invullen.']);
+  ensureBlankLine(d); return d;
+}
+function draftFromParse(p, kind, photoId, extraNote) {
+  const d = baseDraft(kind, photoId);
+  d.supplier = p.supplier || ''; d.time = p.time || ''; d.date = p.date || ''; d.dateFound = !!p.date;
+  d.lines = p.lines.map(l => { const nl = Object.assign(newLine(), { name: l.name, qty: l.qty, unit: l.unit, unitPrice: l.unitPrice, total: l.total, ocr: true }); refreshCmp(nl); return nl; });
+  d.rounding = p.rounding || 0;
+  d.receiptTotal = p.total != null ? p.total : null;
+  if (p.isPin) { d.isPin = true; d.pinTotal = p.pinTotal; d.pinCands = p.pinCands || null; }
+  if (extraNote) d.notes.push(['info', extraNote]);
+  if (!p.isPin) {
+    if (!p.lines.length) d.notes.push(['warn', 'Er zijn geen regels herkend. Vul ze hieronder zelf in, of maak een nieuwe foto: één bon per foto, recht van boven, goed licht.']);
+    else d.notes.push(['info', p.lines.length + (p.lines.length === 1 ? ' regel' : ' regels') + ' gelezen. Controleer alles met de foto en pas aan wat niet klopt.']);
+    if (!p.supplier) d.notes.push(['warn', 'Winkel niet gevonden – vul de naam in.']);
+    const flagged = p.lines.filter(l => l.flag).length;
+    if (flagged) d.notes.push(['warn', '⚠ Bij ' + flagged + (flagged === 1 ? ' regel klopt' : ' regels klopt') + ' aantal × prijs niet met het regeltotaal. Het bedrag van de bon is aangehouden.']);
+  }
+  ensureBlankLine(d);
+  return d;
+}
+function fixDates(out, lastMod) {
+  const known = out.find(d => d.dateFound);
+  out.forEach(d => { if (!d.dateFound) { d.date = known ? known.date : (lastMod ? dateIso(new Date(lastMod)) : todayIso()); if (!d.isPin) d.notes.push(['warn', 'Datum niet gevonden op de bon – controleer de datum.']); } });
+  // dezelfde winkel op meer bonnen van één foto: neem de spelling die het vaakst voorkomt
+  const groups = [];
+  out.forEach(d => { if (!d.supplier) return; let g = groups.find(g => ReceiptParser.matchKnown(d.supplier, [g.names[0]])); if (!g) groups.push(g = { names: [], ds: [] }); g.names.push(d.supplier); g.ds.push(d); });
+  groups.forEach(g => {
+    const cnt = {}; g.names.forEach(n => { cnt[n] = (cnt[n] || 0) + 1; });
+    const known = knownSuppliers().find(k => ReceiptParser.matchKnown(g.names[0], [k]));
+    const bestName = known || Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a] || (/[a-z]/.test(b) ? 1 : 0) - (/[a-z]/.test(a) ? 1 : 0))[0];
+    g.ds.forEach(d => { d.supplier = bestName; });
+  });
+  // pinbon op dezelfde foto als de bonnen: werd een van de gelezen bedragen precies de som van die bonnen, neem dat bedrag
+  out.forEach(d => {
+    if (!d.isPin || !d.pinCands) return;
+    const sum = out.filter(o => !o.isPin && o.receiptTotal != null && o.date === d.date).reduce((a, o) => a + cents(o.receiptTotal), 0);
+    const hit = d.pinCands.find(c => cents(c) === sum);
+    if (sum && hit != null) { d.pinTotal = hit; if (d.receiptTotal != null) d.receiptTotal = hit; }
+  });
+  const sup = out.find(d => d.supplier);
+  out.forEach(d => { if (!d.supplier && sup) { d.supplier = sup.supplier; d.notes = d.notes.filter(n => !/Winkel niet gevonden/.test(n[1])); } });
+  return out;
+}
+function readPhoto(file, i, n) {
+  const lbl = n > 1 ? 'Foto ' + (i + 1) + ' van ' + n : 'Foto';
+  setOcrUi(lbl + ' voorbereiden…', 0.02);
+  return loadImage(file).then(img => {
+    const full = drawScaled(img, 0, 0, img.naturalWidth, img.naturalHeight, Math.min(1, 2000 / Math.max(img.naturalWidth, img.naturalHeight)));
+    const fullData = full.toDataURL('image/jpeg', 0.85), fullId = uid('p');
+    return savePhoto({ id: fullId, date: new Date().toISOString(), data: fullData, kind: 'bon' }).then(() => readImageInto(img, fullId, fullData, lbl, true, file.lastModified));
+  });
+}
+function readImageInto(img, fullId, fullData, lbl, allowSplit, lastMod) {
+  const slips = allowSplit ? findSlips(img) : null;
+  const regions = slips || [{ x: 0, y: 0, w: img.naturalWidth, h: img.naturalHeight }];
+  const out = [];
+  return getWorker().then(worker => {
+    let chain = Promise.resolve();
+    regions.forEach((r, k) => {
+      chain = chain.then(() => {
+        const part = regions.length > 1 ? ' – bon ' + (k + 1) + ' van ' + regions.length : '';
+        ocrProgress = m => { if (m.status === 'recognizing text') setOcrUi(lbl + part + ' lezen… ' + Math.round((m.progress || 0) * 100) + '%', (k + (m.progress || 0)) / regions.length); else if (OCR_STATUS[m.status]) setOcrUi(OCR_STATUS[m.status], null); };
+        setOcrUi(lbl + part + ' lezen…', k / regions.length);
+        return ocrRead(worker, { img: img, r: r }, knownSuppliers(), (i, n) => { if (i) setOcrUi(lbl + part + ' – nog een keer lezen (' + (i + 1) + ' van ' + n + ')…', null); }).then(p => {
+          let photoId = fullId, data = fullData, save = Promise.resolve();
+          if (regions.length > 1) {
+            const cc = drawScaled(img, r.x, r.y, r.w, r.h, Math.min(1, 1600 / Math.max(r.w, r.h)));
+            data = cc.toDataURL('image/jpeg', 0.85); photoId = uid('p');
+            save = savePhoto({ id: photoId, date: new Date().toISOString(), data: data, kind: 'bon' });
+          }
+          return save.then(() => {
+            const d = draftFromParse(p, 'foto', photoId, regions.length > 1 ? 'Op de foto staan ' + regions.length + ' bonnen. Dit is bon ' + (k + 1) + ' van ' + regions.length + '.' : '');
+            d.img = data; d.fullPhotoId = fullId; d.fromSplit = regions.length > 1; d.ocrText = p.raw;
+            if (regions.length > 1) d.sources[0].fullPhotoId = fullId;
+            out.push(d);
+          });
+        });
+      });
+    });
+    return chain.then(() => fixDates(out, lastMod));
+  });
+}
+// "Was dit één bon?" -> hele foto opnieuw lezen zonder te splitsen
+function readWhole() {
+  const d = draft; if (!d || !d.fullPhotoId || busy) return;
+  const fid = d.fullPhotoId, removed = [d].concat(queue.filter(q => q.fullPhotoId === fid));
+  queue = queue.filter(q => q.fullPhotoId !== fid); draft = null;
+  busy = true; showTab('nieuw');
+  getPhoto(fid).then(ph => { if (!ph) throw new Error('foto niet gevonden'); return loadImage(ph.data).then(img => readImageInto(img, fid, ph.data, 'Hele foto', false)); })
+    .then(ds => {
+      busy = false; $('ocrBox').classList.add('hidden');
+      queue = ds.concat(queue); nextFromQueue();
+      purgePhotos(removed.map(x => x.sources[0].photoId).filter(id => id && id !== fid));
+    })
+    .catch(() => { busy = false; $('ocrBox').classList.add('hidden'); showToast('Opnieuw lezen mislukt'); queue = removed.slice(1).concat(queue); draft = removed[0]; renderEdit(); showTab('edit'); });
+}
+// PDF: eerst de tekstlaag, anders de pagina tekenen en lezen met Tesseract
+function pdfLines(items) {
+  items = items.filter(it => it.s && it.s.trim()).sort((a, b) => a.y - b.y || a.x - b.x);
+  const lines = [];
+  items.forEach(it => { const ln = lines[lines.length - 1]; if (ln && Math.abs(it.y - ln.y) <= Math.max(2, Math.min(it.h, ln.h) * 0.5)) ln.items.push(it); else lines.push({ y: it.y, h: it.h, items: [it] }); });
+  return lines.map(ln => ln.items.sort((a, b) => a.x - b.x).map(it => it.s).join(' ').replace(/\s+/g, ' ').trim()).filter(Boolean).join('\n');
+}
+function readPdf(file, i, n) {
+  const lbl = n > 1 ? 'PDF ' + (i + 1) + ' van ' + n : 'PDF';
+  setOcrUi(lbl + ' openen…', 0.05);
+  return loadPdfJs().then(lib => (file.arrayBuffer ? file.arrayBuffer() : new Response(file).arrayBuffer()).then(buf => lib.getDocument({ data: new Uint8Array(buf), isEvalSupported: false }).promise)).then(pdf => {
+    const pages = Math.min(pdf.numPages, 10), out = [];
+    let chain = Promise.resolve();
+    for (let p = 1; p <= pages; p++) chain = chain.then(() => pdf.getPage(p).then(page => {
+      setOcrUi(lbl + ' – pagina ' + p + ' van ' + pages + ' lezen…', p / (pages + 1));
+      const vp = page.getViewport({ scale: 1 });
+      return page.getTextContent().then(tc => {
+        const items = (tc.items || []).map(it => ({ s: String(it.str || ''), x: it.transform[4], y: vp.height - it.transform[5], h: Math.abs(it.transform[3]) || 10 }));
+        const text = pdfLines(items);
+        if ((text.match(/[A-Za-z]/g) || []).length >= 20) { out.push({ text: text }); return; }
+        let scale = Math.min(3, 2000 / vp.width); if (vp.width * scale * vp.height * scale > 12000000) scale = Math.sqrt(12000000 / (vp.width * vp.height));
+        const v2 = page.getViewport({ scale: scale }), c = document.createElement('canvas'); c.width = Math.round(v2.width); c.height = Math.round(v2.height);
+        const ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
+        return page.render({ canvasContext: ctx, viewport: v2 }).promise.then(() => { out.push({ canvas: c }); });
+      });
+    }));
+    return chain.then(() => {
+      const texts = out.filter(o => o.text).map(o => o.text), canv = out.filter(o => o.canvas), res = [];
+      if (texts.length) { const p = ReceiptParser.parse(texts.join('\n'), knownSuppliers()); const d = draftFromParse(p, 'pdf', null, 'Gelezen uit de PDF (' + escapeHtml(file.name || 'bon') + ').'); d.ocrText = texts.join('\n'); res.push(d); }
+      if (!canv.length) return fixDates(res, file.lastModified);
+      return getWorker().then(w => {
+        let c2 = Promise.resolve();
+        canv.forEach(o => { c2 = c2.then(() => { setOcrUi(lbl + ' – gescande pagina lezen…', null); const img = o.canvas.toDataURL('image/jpeg', 0.8); return ocrRead(w, { canvas: enhance(o.canvas) }, knownSuppliers()).then(p => { const d = draftFromParse(p, 'pdf', null, 'Gescande PDF gelezen.'); d.img = img; res.push(d); }); }); });
+        return c2.then(() => fixDates(res, file.lastModified));
+      });
+    });
+  });
+}
+
+// ---------- Lettergrootte (2× kleiner, Normaal, 2× groter) ----------
+const TEXT_SIZES = [['klein2', 'Kleiner (2 van 2)'], ['klein', 'Kleiner (1 van 2)'], ['groot', 'Normaal'], ['extra', 'Groter (1 van 2)'], ['enorm', 'Groter (2 van 2)']];
+const TS_NORMAL = 2;
+function textSizeIndex() { let s = 'groot'; try { s = localStorage.getItem(LS_TS) || 'groot'; } catch (e) {} for (let i = 0; i < TEXT_SIZES.length; i++) if (TEXT_SIZES[i][0] === s) return i; return TS_NORMAL; }
+function applyTextSize(i) {
+  const cl = document.documentElement.classList; TEXT_SIZES.forEach(t => cl.remove('ts-' + t[0]));
+  if (TEXT_SIZES[i][0] !== 'groot') cl.add('ts-' + TEXT_SIZES[i][0]);
+  $('tsMinus').disabled = i === 0; $('tsPlus').disabled = i === TEXT_SIZES.length - 1;
+}
+function storeTextSize(i) { try { if (i === TS_NORMAL) localStorage.removeItem(LS_TS); else localStorage.setItem(LS_TS, TEXT_SIZES[i][0]); } catch (e) {} }
+function changeTextSize(d) { const i = Math.max(0, Math.min(TEXT_SIZES.length - 1, textSizeIndex() + d)); storeTextSize(i); applyTextSize(i); showToast('Letters: ' + TEXT_SIZES[i][1]); }
+(function () { try { const v = localStorage.getItem(LS_TS); if (v && (!TEXT_SIZES.some(t => t[0] === v) || v === 'groot')) localStorage.removeItem(LS_TS); } catch (e) {} })();
+applyTextSize(textSizeIndex());
+
+// ---------- Back-up ----------
+function backupPayload() {
+  let ts = null; try { ts = localStorage.getItem(LS_TS); } catch (e) {}
+  return { app: APP_NAME, version: APP_VERSION, exportedAt: new Date().toISOString(), note: "Foto's zitten niet in deze back-up.", bills: bills, settings: { textSize: ts } };
+}
+function exportBackup() {
+  const text = JSON.stringify(backupPayload(), null, 2), d = new Date();
+  const name = 'kassabon-backup-' + d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()) + '.json';
+  const blob = new Blob([text], { type: 'application/json' });
+  let file = null; try { file = new File([blob], name, { type: 'application/json' }); } catch (e) {}
+  const share = () => (file && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) ? navigator.share({ files: [file], title: 'Kassabon Analyse back-up' }).then(() => true).catch(() => false) : Promise.resolve(false);
+  share().then(ok => {
+    if (ok) { showToast('Back-up gedeeld'); return; }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000); showToast('Back-up opgeslagen als bestand');
+  });
+}
+function applyBackup(data, mode) {
+  if (!data || data.app !== APP_NAME || !Array.isArray(data.bills)) throw new Error('Dit is geen geldige Kassabon Analyse-back-up.');
+  if (mode === 'replace') bills = data.bills.slice();
+  else { const by = {}; bills.forEach(b => { by[String(b.id)] = b; }); data.bills.forEach(b => { by[String(b.id)] = b; }); bills = Object.keys(by).map(k => by[k]); }
+  if (data.settings && data.settings.textSize) { try { localStorage.setItem(LS_TS, data.settings.textSize); } catch (e) {} applyTextSize(textSizeIndex()); }
+  saveBills(); renderList();
+  showToast(mode === 'replace' ? 'Back-up teruggezet' : 'Back-up samengevoegd');
+}
+function importBackupFile(input) {
+  const file = input.files && input.files[0]; input.value = ''; if (!file) return;
+  const r = new FileReader();
+  r.onload = () => {
+    let data; try { data = JSON.parse(r.result); } catch (e) { alert('Dit bestand kon niet gelezen worden als back-up.'); return; }
+    if (!data || data.app !== APP_NAME || !Array.isArray(data.bills)) { alert('Dit is geen geldige Kassabon Analyse-back-up.'); return; }
+    const when = data.exportedAt ? new Date(data.exportedAt).toLocaleString('nl-NL') : 'onbekende datum';
+    askBig('Back-up van ' + when + ' terugzetten? (' + data.bills.length + (data.bills.length === 1 ? ' bon)' : ' bonnen)'), { sub: 'Samenvoegen houdt je huidige bonnen en voegt de bonnen uit de back-up toe (dezelfde bon wordt bijgewerkt). Vervangen wist eerst alles. Foto\'s zitten niet in de back-up.', yes: 'Samenvoegen (aanbevolen)', no: 'Alles vervangen' })
+      .then(merge => { try { applyBackup(data, merge ? 'merge' : 'replace'); } catch (e) { alert(e.message || String(e)); } });
+  };
+  r.onerror = () => alert('Bestand lezen mislukt');
+  r.readAsText(file);
+}
+function clearAll() {
+  askBig('Alle bonnen en foto\'s wissen?', { sub: 'Dit kan niet ongedaan worden gemaakt. Maak eventueel eerst een back-up.', yes: 'Ja, alles wissen', no: 'Nee, niets wissen' }).then(yes => {
+    if (!yes) return; hideUndo(); bills = []; draft = null; queue = []; saveBills(); saveDraft(); writePending([]); clearPhotos(); renderList(); showToast('Alles gewist');
+  });
+}
+
+// ---------- Versie en installeren ----------
+const APP_VERSION = '1';
+$('appVersion').textContent = APP_VERSION;
+function checkForUpdate() {
+  if (!window.fetch || navigator.onLine === false || location.protocol.indexOf('http') !== 0) return;
+  fetch('index.html?check=' + Date.now(), { cache: 'no-store' }).then(r => (r.ok ? r.text() : '')).then(t => {
+    const m = /const APP_VERSION = '(\d+)'/.exec(t);
+    if (m && Number(m[1]) > Number(APP_VERSION)) $('updateBar').classList.remove('hidden');
+  }).catch(() => {});
+}
+function applyUpdate() { location.replace(location.pathname.replace(/index\.html$/, '') + '?v=' + Date.now()); }
+setTimeout(checkForUpdate, 1500);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkForUpdate(); });
+function isStandalone() { return window.navigator.standalone === true || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches); }
+function dismissInstallHint() { try { localStorage.setItem(LS_HINT, 'weg'); } catch (e) {} $('installHint').classList.add('hidden'); }
+function showInstallHint() { showTab('bonnen'); $('installHint').classList.remove('hidden'); }
+(function () { let weg = false; try { weg = localStorage.getItem(LS_HINT) === 'weg'; } catch (e) {} if (!isStandalone() && !weg) $('installHint').classList.remove('hidden'); })();
+
+// ---------- Start ----------
+(function () {
+  try { const s = JSON.parse(localStorage.getItem(LS_DRAFT) || 'null'); if (s && (s.draft || (s.queue && s.queue.length))) { draft = s.draft; queue = s.queue || []; } } catch (e) {}
+  renderList();
+  if (draft) { if (!draft.isPin) ensureBlankLine(draft); renderEdit(); showTab('edit'); }
+  else if (queue.length) nextFromQueue();
+  const pend = readPending(); if (pend.length) purgePhotos(pend);
+})();
+</script>
+</body>
+</html>
