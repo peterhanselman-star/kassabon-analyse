@@ -1,4 +1,4 @@
-# Kassabon Analyse – context (10 nov 2026)
+# Kassabon Analyse – context (bijgewerkt 12 nov 2026)
 - Aparte app (naar analogie van Hapje/Drankje) om kassabonnen vast te leggen, te controleren en via WhatsApp te versturen.
   Stap 1 van het plan: vastleggen. Stap 3 (prijzen vergelijken) komt later; de data is daar al op ingericht.
 - Hosting: https://peterhanselman-star.github.io/kassabon-analyse/ (alleen relatieve paden, geen tracking).
@@ -49,8 +49,48 @@
 - Alleen de achtergrond van het beginschermplaatje is bordeauxrood (#7B1E2B); bon, regels, teal € en gele loep ongewijzigd. Kleuren in de app zelf (theme_color, CSS) zijn ongewijzigd.
 - Nieuwe bestandsnamen vanwege iOS-cache: apple-touch-icon-v2.png, icon-192-v2.png, icon-512-v2.png.
 
-## v3 (10 nov 2026, index-v3.html = huidige index.html) — marker: const APP_VERSION = '3'
+## v3 (10 nov 2026, index-v3.html) — marker: const APP_VERSION = '3'
 - Alleen het beginschermplaatje: de kassabon is vervangen door een witte boodschappentas met twee hengsels
   en een bordeauxrood schild met wit €, in dezelfde platte stijl als Hapje/Drankje. Geen loep, geen andere kleuren.
 - Nieuwe bestandsnamen vanwege iOS-cache: apple-touch-icon-v3.png, icon-192-v3.png, icon-512-v3.png.
   Kleuren in de app zelf (theme_color, CSS) zijn ongewijzigd.
+
+## v4 (12 nov 2026, index-v4.html = huidige index.html, LOKAAL – nog niet gepubliceerd) — marker: const APP_VERSION = '4'
+Aanleiding: Peter las 3 foto's in (2 kassabonnen + pinbon Poelier Jonker, 10-11-2026) en kreeg onzin + een wachtrij
+("hierna volgen nog 2 bonnen"). Testfoto's: /workspace/kb-tools/user-bonnen/1_bouten.jpg, 2_pin.jpg, 3_bami.jpg.
+- OCR
+  - findSlips() snijdt nu ALTIJD bij tot het tekstblok, ook bij één bon per foto (vroeger ging dan de hele foto met
+    grote witte randen naar Tesseract). "Hele foto opnieuw lezen" neemt het blok om alle bonnen heen.
+  - Doorbraak: hoogte samendrukken (sy 0,45–0,55). Kassabonnen gebruiken een hoge, smalle letter; half zo hoog leest
+    Tesseract die bijna foutloos. OCR_VARIANTS = objecten {w (breedte tekstblok px), sy, psm, enh?}:
+    {1100,.5,6} {1100,.45,4} {1300,.55,6} {900,.55,4} {1600,1,enh,6} {1060,.6,enh 5/60,6}. Minimaal 4 rondes,
+    daarna stoppen als alles klopt (som = totaal, datum, alle regels q×p=t, namen herkenbaar); pinbon na 2 gelijke.
+  - combineParses(): alle rondes samen. Winkel/datum/totaal/afronding per meerderheid (datum in de toekomst telt niet);
+    per regel (zelfde regeltotaal) de duidelijkste naam (nameScore = aandeel woorden uit kleine Nederlandse
+    boodschappen-woordenlijst) en een aantal × prijs dat klopt; daarna de regelset kiezen waarvan som + afronding = totaal.
+    Pinbon zodra één ronde een pinbon ziet en geen ronde een kloppende kassabon.
+  - Parser: "0, 618" → 0.618; "4. 25" → 4.25; "| X" / "IX" → "1 X"; "10 % 0,55" → 10 × 0,55; "Tota" = totaal;
+    AFROND/CASH/BTW-tabel beëindigen de regels; verkeerd gelezen SUBTOTAL (Su…) en regels die gelijk zijn aan de som
+    van de regels ervoor tellen niet; code zonder "(" weg ("UN)", "cutk1)").
+  - fixName(): kleine leesfouten verbeteren met de woordenlijst (alleen woorden ≥ 5 letters, max. 1–2 letters verschil,
+    korte merknamen blijven staan), losse stukken samenvoegen ("Scharrele ieren" → Scharreleieren), "macar. mihoen"
+    → "macar./mihoen" als de naam al met / werkt. NB: de bon zelf zegt "GERGRILDE"; de app maakt er "Gegrilde" van.
+  - Resultaat Peters 3 foto's (~12 s op de box): alles exact goed, ook bij 70 % / 160 % formaat en 1,2° scheef
+    (scheef: alleen "Brmi/nasi/…" i.p.v. "Bami"). Oude testfoto met 3 bonnen op één foto: 4 van 4 regels bon B goed
+    (naam bami verminkt), bon A nog zonder regels (bon is daar maar ~430 px breed).
+- Nieuwe werkwijze na het inlezen (geen wachtrij meer)
+  - Alle gekozen foto's → één scherm "Bon controleren" (of "N bonnen controleren"). buildBatch(): winkelnaam gelijk
+    trekken (bewaarde naam gaat voor), ontbrekende datum van andere bon van dezelfde winkel, zelfde winkel + datum →
+    één bon (mergeDrafts, bronnen met lineIds/totaal/afronding, dus "Splits weer" werkt na bewaren), pinbon gekoppeld
+    aan de bon met hetzelfde bedrag/dezelfde dag en meteen gecontroleerd op hetzelfde scherm (Klopt / Verschil, bedrag
+    aanpasbaar, "Deze pinbon hoort niet bij deze bon"). Losse pinbon: eigen blok met "Hoort bij bon op dit scherm?"
+    of vergelijken met een bewaarde bon. Andere winkels/dagen: onder elkaar op hetzelfde scherm, met "Deze bon weglaten".
+  - Eén knop "✓ Bewaren" (of "✓ Alles bewaren"); "Annuleren" (vraagt bevestiging bij meer bonnen).
+  - Scherm als een papieren bon: kleine foto's (tik = groot), Winkel, Datum, regels (omschrijving – loopt door op
+    meer regels –, Aantal of Gewicht kg met stuks/kg-knop, Prijs, Totaal), Regels samen, Afronding, Totaal op de bon,
+    Eindtotaal, controle, pinbon. "Inhoud verpakking" en vergelijkprijs staan NIET meer op dit scherm (pkgSize/pkgUnit/
+    cmp blijven in de gegevens voor stap 3 prijzen vergelijken).
+  - Opslag concept: kassabonDraft = { batch, raw } (raw zonder foto's); oude {draft, queue} wordt nog ingelezen.
+- Tests: ptest.js 39/39, e2e1.js 243/243 (o.a. nieuw blok 7b "meer foto's tegelijk" + overzicht in de opmaaktest),
+  e2e_ocr.js 25/25, e2e_user3.js 25/25 (Peters 3 foto's → 1 bon € 26,40, pinbon Klopt). Voorbeelden:
+  /workspace/kb-tools/v4_preview_*.png + v4_preview_tekst.txt.

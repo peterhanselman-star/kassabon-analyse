@@ -24,7 +24,7 @@
   html.ts-enorm body { -webkit-hyphens: auto; hyphens: auto; overflow-wrap: break-word; }
   html.ts-klein button, html.ts-klein2 button { min-height: 44px; }
   html.ts-klein .del-btn, html.ts-klein2 .del-btn, html.ts-klein .ts-btn, html.ts-klein2 .ts-btn { min-width: 44px; min-height: 44px; }
-  html.ts-klein input, html.ts-klein2 input { min-height: 44px; }
+  html.ts-klein input, html.ts-klein2 input, html.ts-klein textarea, html.ts-klein2 textarea { min-height: 44px; }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background: #edf1f0; color: #111;
     font-size: 1rem; line-height: 1.35; padding-bottom: calc(5.2rem + env(safe-area-inset-bottom));
@@ -109,6 +109,25 @@
   .pkg-row { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; margin-top: 0.2rem; }
   .pkg-row input { flex: 0 1 6rem; min-width: 4rem; width: 6rem; text-align: right; }
   .ln-out { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.3rem; margin-top: 0.25rem; align-items: center; }
+  /* v4: controlescherm als een papieren bon */
+  .sec-head { font-size: 1.15rem; font-weight: 800; margin: 0 0 0.4rem; padding-bottom: 0.3rem; border-bottom: 2px solid #d5dbe5; }
+  .thumbs { display: flex; gap: 0.4rem; overflow-x: auto; margin: 0 0 0.5rem; padding-bottom: 0.2rem; }
+  .thumb { flex: 0 0 auto; height: 7.5rem; width: auto; max-width: 45%; object-fit: cover; object-position: top; border: 2px solid #8a8f98; border-radius: 0.4rem; background: #fff; cursor: zoom-in; }
+  .paper { background: #fffef9; border: 2px solid #d9d4c3; border-radius: 0.6rem 0.6rem 0 0; border-bottom: 2px dashed #b9b3a0; padding: 0.5rem 0.6rem 0.6rem; }
+  .lines-box { background: #fffef9; border: 2px solid #d9d4c3; border-top: none; border-radius: 0 0 0.6rem 0.6rem; padding: 0.4rem 0.6rem 0.6rem; margin-bottom: 0.5rem; }
+  .lines-head { font-size: 1rem; font-weight: 800; color: #333; margin: 0.1rem 0 0.2rem; }
+  .ed-lines .ln { border: none; border-bottom: 2px dashed #cfc9b6; border-radius: 0; background: transparent; padding: 0.5rem 0 0.55rem; margin: 0; }
+  .ed-lines .ln.blank { border-bottom: 2px dashed #cfc9b6; background: transparent; }
+  .ed-lines .ln.blank .ln-top input { border-style: dashed; }
+  .add-line { margin-top: 0.5rem; }
+  .ed-totals { margin-top: 0.4rem; }
+  .ln-top textarea { flex: 1; min-width: 0; font-weight: 800; resize: none; overflow: hidden; width: 100%; min-height: 2.5rem; padding: 0.4rem 0.55rem; font-size: 1.05rem; line-height: 1.3; border: 2px solid #8a8f98; border-radius: 0.5rem; background: #fff; -webkit-appearance: none; appearance: none; color: #111; margin: 0; font-family: inherit; display: block; }
+  .ln-top textarea:focus { outline: none; border-color: #00695c; box-shadow: 0 0 0 3px rgba(0,105,92,0.25); }
+  .ln-top textarea::placeholder { color: #6b6f76; font-weight: 700; }
+  .ed-lines .ln.blank .ln-top textarea { border-style: dashed; }
+  .thumbs-tip { margin: -0.2rem 0 0.5rem; }
+  .pin-row { margin-top: 0.5rem; padding-top: 0.4rem; border-top: 2px solid #d5dbe5; }
+  .pin-res { margin-top: 0.4rem; }
   .ocr-img { display: block; max-width: 100%; max-height: 45vh; margin: 0 auto 0.4rem; border-radius: 0.4rem; border: 1px solid #aaa; }
   .check { font-weight: 800; }
   .viewer { position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,0.92); display: flex; flex-direction: column; }
@@ -192,32 +211,18 @@
         <div class="progress"><div id="ocrBar"></div></div>
         <div class="small-text">De eerste keer worden taalgegevens gedownload (internet nodig). Dat kan even duren.</div>
       </div>
-      <p class="small-text">Daarna kun je alles controleren en aanpassen. Liggen er meer bonnen op één foto, dan probeert de app ze apart te lezen.</p>
+      <p class="small-text">Je mag meer foto's tegelijk kiezen, bijvoorbeeld de kassabonnen en de pinbon. De app leest ze allemaal en laat alles samen op één scherm zien. Bonnen van dezelfde winkel en dezelfde dag worden één bon.</p>
       <button class="big-button secondary" id="manualBtn" onclick="startManual()">✍️ Bon zelf invullen (bijv. markt)</button>
     </div>
   </div>
 
   <div id="tab-edit" class="hidden">
-    <div class="card">
+    <div class="card" id="editTop">
       <div class="section-title" id="editTitle">Bon controleren</div>
       <div id="editNotes"></div>
-      <div id="editImg"></div>
-      <div id="pinPanel"></div>
-      <div id="editForm">
-        <label class="fld-label" for="edSupplier">Winkel</label>
-        <input type="text" id="edSupplier" list="supplierList" autocomplete="off" placeholder="Bijv. Poelier Jonker">
-        <datalist id="supplierList"></datalist>
-        <label class="fld-label" for="edDate">Datum</label>
-        <input type="date" id="edDate">
-      </div>
     </div>
-    <div class="card" id="linesCard">
-      <div class="section-title">Wat staat er op de bon?</div>
-      <p class="small-text" style="margin-top:0;">Alles is aan te passen. Vul <b>Aantal</b> en <b>Prijs</b> in, dan rekent de app het <b>Totaal</b> uit. Gewogen? Tik op <b>kg</b>.</p>
-      <div id="edLines"></div>
-      <button class="big-button secondary" id="addLineBtn" onclick="addLine(true)">+ Nog een regel</button>
-      <div id="edTotals"></div>
-    </div>
+    <datalist id="supplierList"></datalist>
+    <div id="editBills"></div>
     <div class="card" id="editButtons">
       <button class="big-button huge" id="saveBtn" onclick="saveEdit()">✓ Bewaren</button>
       <button class="big-button secondary" id="skipBtn" onclick="cancelEdit()">Annuleren</button>
@@ -293,6 +298,8 @@ var ReceiptParser = (function () {
     s = s.replace(/(\d)\s*,\s(\d{2})(?!\d)/g, '$1.$2');
     s = s.replace(/(\d),(\d{2,3})(?!\d)/g, '$1.$2');
     s = s.replace(/(\d)\s\.(\d{2})(?!\d)/g, '$1.$2');
+    s = s.replace(/(\d)\s*,\s(\d{3})(?!\d)/g, '$1.$2');   // "0, 618" -> "0.618" (gewicht)
+    s = s.replace(/(\d)\.\s(\d{2})(?!\d)/g, '$1.$2');      // "4. 25" -> "4.25"
     return s;
   }
   var SKIP_RE = /(sub\s*-?\s*tota|subt0|btw|b\.t\.w|excl|incl|bedankt|tot\s*ziens|dank\s*u|graag\s*tot|kvk|k\.v\.k|\btel\b|tel[:.]|telefoon|www\.|http|e-?mail|@|\bbon\s*[:#n]|\bbon\b.*\d{3}|verk\s*[:#]|kassa|kassi[eè]re|schaal|\bstk\b|artikel(en)?\b|aantal\s*art|wisselgeld|terug\b|retour|cash\b|contant|klantnr|bonnr|transactie|terminal|merchant|periode|auth|kaartnr|kaart\s*:|akkoord|kopie|kaarthouder|contactlo|debit|maestro|mastercard|v\s?pay|visa\b|betaling|betaald|\bpin\b|openingstijden|btw-?nr|iban|spaarpunt|koers)/i;
@@ -359,6 +366,8 @@ var ReceiptParser = (function () {
   }
   function cleanName(s) {
     s = s.replace(/\(\s*[A-Za-z0-9!|]{1,6}\s*\)?\s*$/, '');      // (UTK1), (VTX1)
+    s = s.replace(/\s+[\[{~]*[A-Za-z0-9!|~]{1,6}[)\]}]\s*$/, '');  // UN), cutk1) – verkeerd gelezen code
+    s = s.replace(/^[~\-_=|.,:;'"`]+/, '');
     s = s.replace(/\s*\/\s*/g, '/');
     s = s.replace(/^[^A-Za-zÀ-ÿ0-9]+/, '').replace(/[^A-Za-zÀ-ÿ0-9.)%]+$/, '');
     return sentenceCase(s);
@@ -386,6 +395,29 @@ var ReceiptParser = (function () {
     }
     return { name: '', known: false };
   }
+  var WORDS = {}; 'bami nasi macar macaroni mihoen mie noedels rijst diverse divers scharrel scharreleieren eieren ei vrije uitloop gegrilde gegrild gebraden gerookte gekookte bouten kip kippen kipfilet kippenpoot kippenpoten drumsticks dijfilet dijen vleugels vleugeltjes haas konijn eend fazant parelhoen kalkoen wild gevogelte poelier slavink saucijs saucijzen gehakt rundergehakt half om varkens biefstuk rollade worst rookworst ham spek bacon filet lever soep bouillon salade saus sate saté pindasaus loempia loempias melk halfvolle volle magere karnemelk yoghurt kwark vla boter roomboter kaas jong belegen oud room slagroom brood volkoren wit bruin krentenbollen bolletjes croissant beschuit appels appel peren bananen banaan sinaasappels citroen druiven aardbeien tomaten tomaat komkommer sla paprika uien ui knoflook wortel wortels aardappelen aardappels broccoli spinazie prei champignons bloemkool andijvie boontjes sperziebonen erwten mais pasta spaghetti penne olie olijfolie azijn suiker zout peper meel koffie thee water cola sap jus bier wijn rood rose limonade frisdrank chips koek koekjes chocolade drop snoep hagelslag pindakaas jam honing stroop ontbijtkoek muesli cornflakes havermout vis zalm tonijn kabeljauw garnalen haring makreel mosselen toiletpapier keukenpapier wasmiddel afwasmiddel zeep tandpasta shampoo statiegeld tas tasje zak korting bonus actie per stuk stuks groente groenten fruit vers verse biologisch bio klein groot grote kleine pak fles blik pot doos zakje portie'.split(' ').forEach(function (w) { WORDS[w] = 1; });
+  // Productnamen: woorden uit een kleine woordenlijst tellen (om de beste lezing te kiezen) en kleine leesfouten verbeteren
+  function nameTokens(s) { return String(s || '').toLowerCase().split(/[^a-zà-ÿ]+/).filter(function (t) { return t.length >= 2; }); }
+  function nameScore(s) {
+    var ts = nameTokens(s), all = 0, good = 0;
+    ts.forEach(function (t) { all += t.length; if (WORDS[t]) good += t.length; });
+    var junk = (String(s || '').match(/[^A-Za-zÀ-ÿ0-9\s\/.,%&'\-+]/g) || []).length;
+    return all ? good / all - junk * 0.1 - (ts.length > 5 ? 0.1 : 0) : -1;
+  }
+  function nearWord(t) {
+    if (t.length < 5 || WORDS[t]) return null;
+    var maxD = t.length >= 8 ? 2 : 1, best = null, bd = 99;
+    Object.keys(WORDS).forEach(function (w) { if (w.length < 4 || Math.abs(w.length - t.length) > maxD) return; var d = lev(t, w); if (d <= maxD && d < bd) { bd = d; best = w; } });
+    return best;
+  }
+  function keepCase(orig, w) { if (orig === orig.toUpperCase()) return w.toUpperCase(); if (orig.charAt(0) === orig.charAt(0).toUpperCase()) return w.charAt(0).toUpperCase() + w.slice(1); return w; }
+  function fixName(s) {
+    s = String(s || '');
+    if ((s.match(/\//g) || []).length >= 2) s = s.replace(/\.\s+(?=[A-Za-zÀ-ÿ])/g, './'); // "Bami/nasi/macar. mihoen" -> "macar./mihoen"
+    // twee stukken die samen één woord zijn ("Scharrele ieren" -> "Scharreleieren")
+    s = s.replace(/([A-Za-zÀ-ÿ]{3,}) ([A-Za-zÀ-ÿ]{2,})/g, function (a, x, y) { var j = (x + y).toLowerCase(); if (WORDS[x.toLowerCase()] && WORDS[y.toLowerCase()]) return a; if (WORDS[j] || (j.length >= 8 && nearWord(j))) return x + keepCase(y, y).toLowerCase(); return a; });
+    return s.replace(/[A-Za-zÀ-ÿ]+/g, function (t) { var w = nearWord(t.toLowerCase()); return w ? keepCase(t, w) : t; });
+  }
   function num(s) { return Math.round(parseFloat(s) * 1000) / 1000; }
   function r2(x) { return Math.round(x * 100) / 100; }
   function mkLine(name, qty, unit, price, total) {
@@ -396,7 +428,11 @@ var ReceiptParser = (function () {
   function parse(text, known) {
     var raw = String(text || '').split(/\r?\n/);
     var lines = [];
-    raw.forEach(function (l) { l = normNums(l).replace(/[€]/g, ' ').replace(/\s+/g, ' ').trim(); if (l) lines.push(l); });
+    raw.forEach(function (l) {
+      l = normNums(l).replace(/[€]/g, ' ').replace(/\s+/g, ' ').trim();
+      l = l.replace(/^[|lI\]!\[]\s*([xX×*%])\s+(?=-?\d)/, '1 $1 ').replace(/^(\d{1,3})\s*%\s+(?=-?\d{1,4}\.\d{2})/, '$1 X ');
+      if (l) lines.push(l);
+    });
     var res = { supplier: '', supplierKnown: false, date: '', time: '', lines: [], total: null, rounding: 0, cash: null, isPin: false, pinTotal: null };
     var sup = findSupplier(lines, known); res.supplier = sup.name; res.supplierKnown = sup.known;
     var dt = findDate(lines); if (dt) { res.date = dt.date; res.time = dt.time; }
@@ -405,19 +441,21 @@ var ReceiptParser = (function () {
     for (var i = 0; i < lines.length; i++) {
       var l = lines[i], low = l.toLowerCase();
       var mt;
-      if (/af\s*rond|afronding|\bfrond|^a\w?r?on\w?\.?\s+-?0\.0\d$/i.test(l)) { mt = new RegExp(PRICE).exec(l); if (mt && Math.abs(num(mt[1])) < 0.05) res.rounding = num(mt[1]); pending = null; continue; }
-      if (!/sub/i.test(l) && (mt = /\b(totaal|total|te\s*betalen|bedrag)\b\s*:?\s*(eur)?\s*(-?\d{1,5}\.\d{2})/i.exec(l))) {
+      if (/af\s*rond|afronding|\bfrond|^a\w?r?on\w?\.?\s+-?0\.0\d$/i.test(l)) { mt = new RegExp(PRICE).exec(l); if (mt && Math.abs(num(mt[1])) < 0.05) res.rounding = num(mt[1]); pending = null; if (res.lines.length) ended = true; continue; }
+      if (!/sub/i.test(l) && (mt = /\b(totaal|total|tota|te\s*betalen|bedrag)\b\s*:?\s*(eur)?\s*(-?\d{1,5}\.\d{2})/i.exec(l))) {
         if (pinHits >= 2) res.pinTotal = num(mt[3]);
         if (res.total == null) res.total = num(mt[3]);
         ended = true; pending = null; continue;
       }
-      if (/\b(cash|contant)\b/i.test(l)) { mt = new RegExp(PRICE).exec(l); if (mt && res.cash == null) res.cash = num(mt[1]); pending = null; continue; }
+      if (/\b(cash|contant)\b/i.test(l)) { mt = new RegExp(PRICE).exec(l); if (mt && res.cash == null) res.cash = num(mt[1]); pending = null; if (res.lines.length) ended = true; continue; }
+      if (res.lines.length && /\b(btw|btu|b\.t\.w|koers)\b/i.test(l)) { ended = true; continue; }
       if (ended) continue;
+      if (/^su[bp]/i.test(l)) { pending = null; continue; } // SUBTOTAL, ook als het verkeerd gelezen is
       if (/^\(\s*[A-Za-z0-9!|]{1,6}\s*\)?$/.test(l)) continue; // losse code zoals (UTK1) op eigen regel
       if (SKIP_RE.test(l) || DATE_RE.test(l) || ADDR_RE.test(l)) { if (!/\d\.\d{2}/.test(l) || SKIP_RE.test(l)) { pending = /sub/i.test(l) ? null : pending; continue; } }
       if (/^(kg|€|eur)?\s*(kg)?\s*[€e]?\s*\/?\s*kg/i.test(l) && letters(l) <= 6) continue; // kopregel "kg €/kg €"
       // 1 X 4.25 4.25
-      if ((mt = new RegExp('(\\d{1,3})\\s*[xX×*]\\s*' + PRICE + '\\s+' + PRICE + '\\s*[A-Z]?$').exec(l))) {
+      if ((mt = new RegExp('(\\d{1,3})\\s*[xX×*%]\\s*' + PRICE + '\\s+' + PRICE + '\\s*[A-Z]?$').exec(l))) {
         var before = l.slice(0, mt.index).trim();
         var nm = letters(before) >= 3 ? cleanName(before) : (pending || '');
         var q0 = num(mt[1]); if (!q0) q0 = num(mt[2]) > 0 ? Math.max(1, Math.round(num(mt[3]) / num(mt[2]))) : 1;
@@ -458,12 +496,14 @@ var ReceiptParser = (function () {
       if (lt >= 3 && !prices.length) { pending = cleanName(l); if (letters(pending) < 3) pending = null; continue; }
     }
     // opruimen: 0,00-regels weg; ±0,01/0,02 is afronding; regels groter dan of gelijk aan het totaal zijn ruis
-    var keep = [];
+    var keep = [], runC = 0;
     res.lines.forEach(function (ln) {
+      var c = Math.round((ln.total || 0) * 100);
+      if (keep.length >= 2 && Math.abs(c - runC) <= 2) return; // tussentotaal
       if (ln.total == null || Math.abs(ln.total) < 0.005) return;
       if (Math.abs(ln.total) <= 0.02 && (ln.qty == null || ln.qty === 1)) { if (!res.rounding) res.rounding = ln.total; return; }
       if (res.total != null && res.lines.length > 1 && ln.total >= res.total && ln.total > 0) return;
-      keep.push(ln);
+      keep.push(ln); runC += c;
     });
     res.lines = keep;
     if (pinHits >= 2 && (res.lines.length === 0 || pinHits >= 4) && (res.pinTotal != null || res.total != null)) {
@@ -472,7 +512,7 @@ var ReceiptParser = (function () {
     if (res.total == null && res.cash != null) res.total = res.cash;
     return res;
   }
-  return { parse: parse, normNums: normNums, matchKnown: matchKnown, simplify: simplify, niceCase: niceCase };
+  return { parse: parse, nameScore: nameScore, fixName: fixName, normNums: normNums, matchKnown: matchKnown, simplify: simplify, niceCase: niceCase };
 })();
 // ==PARSER-END==
 
@@ -542,7 +582,7 @@ function srcPhotoIds(list) { const a = []; (list || []).forEach(s => { if (s.pho
 function photosInUse() {
   const s = new Set();
   bills.forEach(b => { srcPhotoIds(b.sources).concat(b.extraPhotos || []).forEach(id => s.add(id)); });
-  [draft].concat(queue).forEach(d => { if (d) { srcPhotoIds(d.sources).forEach(id => s.add(id)); if (d.fullPhotoId) s.add(d.fullPhotoId); } });
+  batch.concat(batchRaw).forEach(d => { if (d) { srcPhotoIds(d.sources).forEach(id => s.add(id)); if (d.fullPhotoId) s.add(d.fullPhotoId); (d.pins || []).forEach(p => { if (p.photoId) s.add(p.photoId); if (p.fullPhotoId) s.add(p.fullPhotoId); }); } });
   return s;
 }
 function purgePhotos(ids) { const used = photosInUse(); return Promise.all(ids.filter(id => !used.has(id)).map(deletePhoto)).then(() => writePending(readPending().filter(id => ids.indexOf(id) < 0))); }
@@ -811,138 +851,177 @@ $('periodSeg').addEventListener('click', e => { const b = e.target.closest('[dat
 ['perFrom', 'perTo'].forEach(id => $(id).addEventListener('change', renderPeriod));
 
 // ---------- Controleren / aanpassen ----------
-// draft = { isNew, billId?, supplier, date, lines, rounding, receiptTotal, sources:[], notes:[], img?, isPin?, pinTotal? }
-let draft = null, queue = [], busy = false;
-function saveDraft() { try { if (draft || queue.length) localStorage.setItem(LS_DRAFT, JSON.stringify({ draft: draft, queue: queue })); else localStorage.removeItem(LS_DRAFT); } catch (e) {} }
+// Alle gelezen bonnen staan samen op één scherm (geen wachtrij). batch = lijst van bonnen op dat scherm; draft = de eerste.
+// bon = { isNew, billId?, supplier, date, time, lines, rounding, receiptTotal, sources:[], notes:[], imgs:[], pins:[], isPin?, pinTotal?, pinTarget? }
+let batch = [], batchRaw = [], draft = null, busy = false;
+function setBatch(list) { batch = list || []; draft = batch[0] || null; }
+function saveDraft() {
+  try {
+    if (!batch.length) { localStorage.removeItem(LS_DRAFT); return; }
+    const raw = JSON.parse(JSON.stringify(batchRaw, (k, v) => (k === 'img' || k === 'imgs' ? undefined : v))); // foto's staan al in de foto-opslag
+    localStorage.setItem(LS_DRAFT, JSON.stringify({ batch: batch, raw: raw }));
+  } catch (e) {}
+}
 function knownSuppliers() {
   const seen = {}, out = [];
   const add = s => { const k = normSupplier(s); if (s && k && !seen[k]) { seen[k] = 1; out.push(s); } };
-  sortedBills().forEach(b => add(b.supplier)); queue.forEach(d => add(d.supplier)); if (draft) add(draft.supplier);
+  sortedBills().forEach(b => add(b.supplier)); batch.forEach(d => add(d.supplier));
   return out;
 }
 function startManual() {
-  draft = { isNew: true, supplier: '', date: todayIso(), lines: [], rounding: 0, receiptTotal: null, sources: [{ id: uid('s'), kind: 'hand' }], notes: [] };
-  queue = []; ensureBlankLine(draft); saveDraft(); renderEdit(); showTab('edit');
+  batchRaw = [];
+  setBatch([{ isNew: true, supplier: '', date: todayIso(), lines: [], rounding: 0, receiptTotal: null, sources: [{ id: uid('s'), kind: 'hand' }], notes: [] }]);
+  ensureBlankLine(draft); saveDraft(); renderEdit(); showTab('edit');
   setTimeout(() => $('edSupplier').focus(), 50);
 }
 function editBill(id) {
   const b = findBill(id); if (!b) return;
-  draft = JSON.parse(JSON.stringify(b)); draft.isNew = false; draft.billId = id; draft.notes = [];
-  ensureBlankLine(draft); saveDraft(); renderEdit(); showTab('edit');
+  const d = JSON.parse(JSON.stringify(b)); d.isNew = false; d.billId = id; d.notes = [];
+  batchRaw = []; setBatch([d]); ensureBlankLine(d); saveDraft(); renderEdit(); showTab('edit');
 }
+const sid = (base, i) => base + (i ? '_' + i : '');
+function secIndex(el) { const s = el && el.closest('[data-di]'); return s ? Number(s.getAttribute('data-di')) : -1; }
 function lineHtml(l, last) {
-  const blank = lineIsBlank(l), kg = l.unit === 'kg', f = calcFlag(l), c = compareFor(l);
+  const blank = lineIsBlank(l), kg = l.unit === 'kg', f = calcFlag(l);
   return '<div class="ln' + (blank ? ' blank' : '') + '" data-ln="' + l.id + '">' +
-    '<div class="ln-top"><input type="text" data-f="name" placeholder="' + (blank && last ? 'Nieuwe regel: omschrijving' : 'Omschrijving') + '" value="' + escapeHtml(l.name) + '" aria-label="Omschrijving">' +
+    '<div class="ln-top"><textarea rows="1" data-f="name" placeholder="' + (blank && last ? 'Nieuwe regel: omschrijving' : 'Omschrijving') + '" aria-label="Omschrijving">' + escapeHtml(l.name) + '</textarea>' +
     '<button type="button" class="del-btn" data-delln="' + l.id + '" aria-label="Regel wissen">✕</button></div>' +
     '<div class="ln-nums">' +
       '<label><span data-lbl="qty">' + (kg ? 'Gewicht kg' : 'Aantal') + '</span><input type="text" inputmode="decimal" data-f="qty" value="' + escapeHtml(qtyStr(l.qty, l.unit)) + '" placeholder="1"></label>' +
       '<span class="pills ln-unit" role="group" aria-label="Eenheid"><button type="button" data-unit="st" class="' + (kg ? '' : 'on') + '">stuks</button><button type="button" data-unit="kg" class="' + (kg ? 'on' : '') + '">kg</button></span>' +
-      '<label><span data-lbl="price">' + (kg ? 'Prijs/kg €' : 'Prijs/stuk €') + '</span><input type="text" inputmode="decimal" data-f="price" value="' + escapeHtml(numStr(l.unitPrice, 2)) + '"></label>' +
+      '<label><span data-lbl="price">' + (kg ? 'Prijs/kg €' : 'Prijs €') + '</span><input type="text" inputmode="decimal" data-f="price" value="' + escapeHtml(numStr(l.unitPrice, 2)) + '"></label>' +
       '<label><span>Totaal €</span><input type="text" inputmode="decimal" data-f="total" value="' + escapeHtml(numStr(l.total, 2)) + '"></label>' +
     '</div>' +
     '<div class="flag ln-flag' + (f ? '' : ' hidden') + '">' + (f ? '⚠ ' + escapeHtml(f) + ' Pas aan als het niet klopt.' : '') + '</div>' +
-    '<details class="ln-pkg"' + (l.pkgSize ? ' open' : '') + '><summary>Inhoud verpakking (om te vergelijken)</summary><div class="pkg-row">' +
-      '<input type="text" inputmode="decimal" data-f="pkg" value="' + escapeHtml(l.pkgSize ? String(l.pkgSize).replace('.', ',') : '') + '" placeholder="500" aria-label="Inhoud">' +
-      '<span class="pills" role="group" aria-label="Eenheid verpakking">' + PKG_UNITS.map(u => '<button type="button" data-pku="' + u[0] + '" class="' + (l.pkgUnit === u[0] ? 'on' : '') + '">' + u[1] + '</button>').join('') + '</span>' +
-    '</div></details>' +
-    '<div class="ln-out"><span class="cmp ln-cmp' + (c ? '' : ' hidden') + '">' + cmpText(c) + '</span></div>' +
   '</div>';
 }
-function renderLines() { const ls = draft.lines; $('edLines').innerHTML = ls.map((l, i) => lineHtml(l, i === ls.length - 1)).join(''); renderEditTotals(); }
-function renderEditTotals() {
-  const b = draft;
-  $('edTotals').innerHTML = '<div class="sum-row"><span>Regels samen</span><b id="edLinesSum">' + euro(billLinesCents(b) / 100) + '</b></div>' +
-    '<div class="two" style="margin-top:0.3rem;"><label><span class="fld-label">Afronding €</span><input type="text" inputmode="decimal" id="edRounding" value="' + (cents(b.rounding) ? numStr(b.rounding, 2) : '') + '" placeholder="0,00"></label>' +
-    '<label><span class="fld-label">Totaal op de bon €</span><input type="text" inputmode="decimal" id="edReceiptTotal" value="' + (typeof b.receiptTotal === 'number' ? numStr(b.receiptTotal, 2) : '') + '" placeholder="leeg = niet"></label></div>' +
-    '<div class="grand"><span>Totaal</span><span id="edTotal">' + euro(billTotalCents(b) / 100) + '</span></div><div id="edCheck">' + checkHtml(b) + '</div>';
+function fitName(t) { if (!t) return; t.style.height = 'auto'; t.style.height = (t.scrollHeight + 4) + 'px'; }
+function renderLines(i) { i = i || 0; const d = batch[i]; if (!d || d.isPin) return; const ls = d.lines, box = $(sid('edLines', i)); box.innerHTML = ls.map((l, k) => lineHtml(l, k === ls.length - 1)).join(''); renderEditTotals(i); requestAnimationFrame(() => box.querySelectorAll('textarea[data-f=name]').forEach(fitName)); }
+window.addEventListener('resize', () => document.querySelectorAll('textarea[data-f=name]').forEach(fitName));
+function pinRowHtml(d, i) {
+  return (d.pins || []).map((p, k) => {
+    const id = i === 0 && k === 0 ? '' : '_' + i + '_' + k, sum = billTotalCents(d), ok = typeof p.amount === 'number' && cents(p.amount) === sum;
+    const res = typeof p.amount !== 'number' ? '' : ok ? '<div class="note ok" id="pinResult' + id + '">💳 ✓ Klopt: gepind ' + euro(p.amount) + (p.date ? ' op ' + dateLabel(p.date, false) : '') + ', de bon is ' + euro(sum / 100) + '.</div>'
+      : '<div class="note bad" id="pinResult' + id + '">💳 Verschil ' + euro(Math.abs(sum - cents(p.amount)) / 100) + ': gepind ' + euro(p.amount) + ', de bon is ' + euro(sum / 100) + '.</div>';
+    return '<div class="pin-row" data-pk="' + k + '"><label class="fld-label" for="pinTotalInput' + id + '">💳 Bedrag op de pinbon €</label>' +
+      '<input type="text" inputmode="decimal" id="pinTotalInput' + id + '" data-fld="pin" value="' + (typeof p.amount === 'number' ? numStr(p.amount, 2) : '') + '">' +
+      '<div class="pin-res">' + res + '</div><button type="button" class="link-button" data-pinoff="' + k + '">Deze pinbon hoort niet bij deze bon</button></div>';
+  }).join('');
 }
-function updateEditTotalsOnly() { $('edLinesSum').textContent = euro(billLinesCents(draft) / 100); $('edTotal').textContent = euro(billTotalCents(draft) / 100); $('edCheck').innerHTML = checkHtml(draft); }
+function renderEditTotals(i) {
+  i = i || 0; const b = batch[i], box = $(sid('edTotals', i)); if (!box) return;
+  box.innerHTML = '<div class="sum-row"><span>Regels samen</span><b id="' + sid('edLinesSum', i) + '">' + euro(billLinesCents(b) / 100) + '</b></div>' +
+    '<div class="two" style="margin-top:0.3rem;"><label><span class="fld-label">Afronding €</span><input type="text" inputmode="decimal" id="' + sid('edRounding', i) + '" data-fld="rounding" value="' + (cents(b.rounding) ? numStr(b.rounding, 2) : '') + '" placeholder="0,00"></label>' +
+    '<label><span class="fld-label">Totaal op de bon €</span><input type="text" inputmode="decimal" id="' + sid('edReceiptTotal', i) + '" data-fld="receiptTotal" value="' + (typeof b.receiptTotal === 'number' ? numStr(b.receiptTotal, 2) : '') + '" placeholder="leeg = niet"></label></div>' +
+    '<div class="grand"><span>Eindtotaal</span><span id="' + sid('edTotal', i) + '">' + euro(billTotalCents(b) / 100) + '</span></div><div id="' + sid('edCheck', i) + '">' + checkHtml(b) + '</div>' +
+    '<div id="' + sid('edPins', i) + '">' + pinRowHtml(b, i) + '</div>';
+}
+function updateEditTotalsOnly(i) {
+  i = i || 0; const d = batch[i];
+  $(sid('edLinesSum', i)).textContent = euro(billLinesCents(d) / 100); $(sid('edTotal', i)).textContent = euro(billTotalCents(d) / 100); $(sid('edCheck', i)).innerHTML = checkHtml(d);
+  const box = $(sid('edPins', i)); if (box) box.querySelectorAll('.pin-row').forEach(r => { const k = Number(r.getAttribute('data-pk')); const tmp = document.createElement('div'); tmp.innerHTML = pinRowHtml(d, i); const nr = tmp.querySelector('[data-pk="' + k + '"] .pin-res'); r.querySelector('.pin-res').innerHTML = nr ? nr.innerHTML : ''; });
+}
+function secImgs(d) { return (d.imgs || (d.img ? [d.img] : [])).concat((d.pins || []).map(p => p.img).filter(Boolean)); }
+function secHtml(d, i) {
+  const n = batch.length, isPin = !!d.isPin, imgs = secImgs(d);
+  let h = '<div class="card bill-sec" data-di="' + i + '" id="sec_' + i + '">';
+  if (n > 1) h += '<div class="sec-head">' + (isPin ? '💳 Pinbon' : 'Bon ' + (i + 1) + ' van ' + n) + '</div>';
+  h += (d.notes || []).map(x => '<div class="note ' + x[0] + '">' + x[1] + '</div>').join('');
+  if (imgs.length) h += '<div class="thumbs">' + imgs.map((src, k) => '<img class="thumb" data-thumb="' + k + '" alt="Foto ' + (k + 1) + ' van deze bon" src="' + src + '">').join('') + '</div><p class="small-text thumbs-tip">Tik op een foto om hem groot te zien.</p>';
+  if (isPin) {
+    h += '<div id="' + sid('pinPanel', i) + '" class="pin-panel">' + pinPanelHtml(d) + '</div>';
+  } else {
+    h += '<div class="paper" id="' + sid('editForm', i) + '">' +
+      '<label class="fld-label" for="' + sid('edSupplier', i) + '">Winkel</label><input type="text" id="' + sid('edSupplier', i) + '" data-fld="supplier" list="supplierList" autocomplete="off" placeholder="Bijv. Poelier Jonker" value="' + escapeHtml(d.supplier || '') + '">' +
+      '<label class="fld-label" for="' + sid('edDate', i) + '">Datum</label><input type="date" id="' + sid('edDate', i) + '" data-fld="date" value="' + escapeHtml(d.date || '') + '">' +
+      '</div><div id="' + sid('linesCard', i) + '" class="lines-box"><div class="lines-head">Wat staat er op de bon?</div>' +
+      '<div id="' + sid('edLines', i) + '" class="ed-lines"></div>' +
+      '<button class="big-button secondary add-line" id="' + sid('addLineBtn', i) + '" data-addline="1">+ Nog een regel</button>' +
+      '<div id="' + sid('edTotals', i) + '" class="ed-totals"></div></div>';
+  }
+  if (d.fromSplit && d.fullPhotoId && d.isNew) h += '<button class="link-button" id="' + sid('wholeBtn', i) + '" data-whole="1">Was dit één bon? Lees de hele foto opnieuw</button>';
+  if (n > 1 && d.isNew) h += '<button class="big-button secondary" data-dropsec="1">Deze ' + (isPin ? 'pinbon' : 'bon') + ' weglaten</button>';
+  return h + '</div>';
+}
+function batchSummary() {
+  if (!batchRaw.length) return '';
+  const bonnen = batchRaw.filter(d => !d.isPin).length, pins = batchRaw.filter(d => d.isPin).length, photos = batchRaw.reduce((s, d) => s.add(d.fullPhotoId || (d.sources[0] && d.sources[0].photoId) || d), new Set()).size;
+  const parts = []; if (bonnen) parts.push(bonnen + (bonnen === 1 ? ' kassabon' : ' kassabonnen')); if (pins) parts.push(pins + (pins === 1 ? ' pinbon' : ' pinbonnen'));
+  return (photos === 1 ? 'Foto gelezen' : photos + ' foto\'s gelezen') + (parts.length ? ': ' + parts.join(' en ') + '.' : '.') + ' Kijk alles na en pas aan wat niet klopt.';
+}
 function renderEdit() {
-  const d = draft, isPin = !!d.isPin;
-  $('editTitle').textContent = d.isNew ? (isPin ? '💳 Pinbon' : 'Bon controleren') : 'Bon aanpassen';
-  let notes = (d.notes || []).map(n => '<div class="note ' + n[0] + '">' + n[1] + '</div>').join('');
-  if (queue.length) notes += '<div class="note info" id="queueNote">Hierna ' + (queue.length === 1 ? 'volgt nog 1 bon' : 'volgen nog ' + queue.length + ' bonnen') + '.</div>';
-  $('editNotes').innerHTML = notes;
-  $('editImg').innerHTML = d.img ? '<img class="ocr-img" id="ocrImg" alt="Foto van deze bon" src="' + d.img + '"><p class="small-text" style="margin:0 0 0.4rem;text-align:center;">Vergelijk met de foto. Tik op de foto om hem groot te zien.</p>' +
-    (d.fromSplit ? '<button class="link-button" id="wholeBtn" onclick="readWhole()">Was dit één bon? Lees de hele foto opnieuw</button>' : '') : '';
-  $('editForm').classList.toggle('hidden', isPin);
-  $('linesCard').classList.toggle('hidden', isPin);
-  $('pinPanel').innerHTML = isPin ? pinPanelHtml() : '';
-  $('edSupplier').value = d.supplier || '';
-  $('edDate').value = d.date || '';
+  const d = draft; if (!d) return;
+  const n = batch.length;
+  $('editTitle').textContent = !d.isNew ? 'Bon aanpassen' : n > 1 ? n + ' bonnen controleren' : d.isPin ? '💳 Pinbon' : 'Bon controleren';
+  const sum = d.isNew ? batchSummary() : '';
+  $('editNotes').innerHTML = sum ? '<div class="note info" id="batchNote">' + sum + '</div>' : '';
+  $('editTop').classList.toggle('hidden', !$('editTitle').textContent);
+  $('editBills').innerHTML = batch.map((x, i) => secHtml(x, i)).join('');
   $('supplierList').innerHTML = knownSuppliers().map(s => '<option value="' + escapeHtml(s) + '">').join('');
-  if (!isPin) renderLines();
-  $('saveBtn').textContent = isPin ? '✓ Klaar' : d.isNew ? (queue.length ? '✓ Bewaren en volgende' : '✓ Bewaren') : '✓ Klaar';
-  $('skipBtn').textContent = d.isNew ? (queue.length ? 'Deze overslaan' : 'Annuleren') : 'Annuleren';
+  batch.forEach((x, i) => { if (!x.isPin) renderLines(i); });
+  const onlyPins = batch.every(x => x.isPin);
+  $('saveBtn').textContent = onlyPins ? '✓ Klaar' : d.isNew ? (n > 1 ? '✓ Alles bewaren' : '✓ Bewaren') : '✓ Klaar';
+  $('skipBtn').textContent = 'Annuleren';
 }
-// ---------- Pinbon ----------
-let pinTarget = null;
-function pinCandidates() { const d = draft, same = sortedBills().filter(b => d.date && b.date === d.date); return same.length ? same : sortedBills().slice(0, 8); }
-function pinResultHtml() {
-  const t = findBill(pinTarget), d = draft;
+// ---------- Pinbon die (nog) niet bij een bon op dit scherm hoort ----------
+function pinCandidates(d) { const same = sortedBills().filter(b => d.date && b.date === d.date); return same.length ? same : sortedBills().slice(0, 8); }
+function pinResultHtml(d) {
+  const t = findBill(d.pinTarget);
   if (!t || typeof d.pinTotal !== 'number') return '';
   const diff = billTotalCents(t) - cents(d.pinTotal);
   return diff === 0 ? '<div class="note ok" id="pinResult">✓ Klopt: de bon is ' + euro(billTotalCents(t) / 100) + ', gepind ' + euro(d.pinTotal) + '.</div>'
     : '<div class="note bad" id="pinResult">Verschil ' + euro(Math.abs(diff) / 100) + ': de bon is ' + euro(billTotalCents(t) / 100) + ', gepind ' + euro(d.pinTotal) + '.</div>';
 }
-function pinPanelHtml() {
-  const d = draft, list = pinCandidates();
-  if (!pinTarget || !list.some(b => b.id === pinTarget)) { const pref = list.find(b => d.supplier && normSupplier(b.supplier) === normSupplier(d.supplier)) || list[0]; pinTarget = pref ? pref.id : null; }
+function pinPanelHtml(d) {
+  const list = pinCandidates(d);
+  if (!d.pinTarget || !list.some(b => b.id === d.pinTarget)) { const pref = list.find(b => typeof d.pinTotal === 'number' && billTotalCents(b) === cents(d.pinTotal)) || list.find(b => d.supplier && normSupplier(b.supplier) === normSupplier(d.supplier)) || list[0]; d.pinTarget = pref ? pref.id : null; }
   let h = '<div class="note info" id="pinNote">💳 <b>Dit is een pinbon: controleer tegen totaal.</b><br>Gepind: <b>' + (typeof d.pinTotal === 'number' ? euro(d.pinTotal) : '?') + '</b>' + (d.date ? ' op ' + dateLabel(d.date) : '') + '</div>';
-  h += '<label class="fld-label" for="pinTotalInput">Bedrag op de pinbon €</label><input type="text" inputmode="decimal" id="pinTotalInput" value="' + (typeof d.pinTotal === 'number' ? numStr(d.pinTotal, 2) : '') + '">';
-  if (!list.length) return h + '<p>Er is nog geen bon om mee te vergelijken.</p><button class="link-button" onclick="pinAsReceipt()">Dit is geen pinbon – als gewone bon invoeren</button>';
-  h += '<div class="fld-label" style="margin-top:0.5rem;">Vergelijk met de bon van:</div>';
-  list.forEach(b => { h += '<button type="button" class="pick-bill' + (b.id === pinTarget ? ' on' : '') + '" data-pinbill="' + b.id + '"><b>' + escapeHtml(b.supplier || 'Onbekend') + '</b>, ' + dateLabel(b.date, false) + ' – ' + euro(billTotalCents(b) / 100) + ((b.sources || []).length > 1 ? ' (' + b.sources.length + ' bonnen)' : '') + '</button>'; });
-  h += '<div id="pinResultBox">' + pinResultHtml() + '</div>';
-  h += '<button class="link-button" onclick="pinAsReceipt()">Dit is geen pinbon – als gewone bon invoeren</button>';
+  h += '<label class="fld-label" for="pinTotalInput">Bedrag op de pinbon €</label><input type="text" inputmode="decimal" id="pinTotalInput" data-fld="pinTotal" value="' + (typeof d.pinTotal === 'number' ? numStr(d.pinTotal, 2) : '') + '">';
+  const here = batch.map((x, j) => ({ x: x, j: j })).filter(o => !o.x.isPin);
+  if (here.length) { h += '<div class="fld-label" style="margin-top:0.5rem;">Hoort deze pinbon bij een bon op dit scherm?</div>'; here.forEach(o => { h += '<button type="button" class="pick-bill" data-pinattach="' + o.j + '"><b>' + escapeHtml(o.x.supplier || 'Bon ' + (o.j + 1)) + '</b>, ' + dateLabel(o.x.date, false) + ' – ' + euro(billTotalCents(o.x) / 100) + '</button>'; }); }
+  if (!list.length) return h + (here.length ? '' : '<p>Er is nog geen bewaarde bon om mee te vergelijken.</p>') + '<button class="link-button" data-pinasbon="1">Dit is geen pinbon – als gewone bon invoeren</button>';
+  h += '<div class="fld-label" style="margin-top:0.5rem;">' + (here.length ? 'Of vergelijk met een bewaarde bon:' : 'Vergelijk met de bon van:') + '</div>';
+  list.forEach(b => { h += '<button type="button" class="pick-bill' + (b.id === d.pinTarget ? ' on' : '') + '" data-pinbill="' + b.id + '"><b>' + escapeHtml(b.supplier || 'Onbekend') + '</b>, ' + dateLabel(b.date, false) + ' – ' + euro(billTotalCents(b) / 100) + ((b.sources || []).length > 1 ? ' (' + b.sources.length + ' bonnen)' : '') + '</button>'; });
+  h += '<div class="pin-res-box">' + pinResultHtml(d) + '</div>';
+  h += '<button class="link-button" data-pinasbon="1">Dit is geen pinbon – als gewone bon invoeren</button>';
   return h;
 }
-function pinAsReceipt() { draft.isPin = false; ensureBlankLine(draft); saveDraft(); renderEdit(); }
-document.addEventListener('click', e => {
-  const pb = e.target.closest('[data-pinbill]'); if (pb) { pinTarget = pb.getAttribute('data-pinbill'); $('pinPanel').innerHTML = pinPanelHtml(); return; }
-  if (e.target.id === 'ocrImg' && draft && draft.img) openViewerSrc([draft.img]);
-});
-document.addEventListener('input', e => {
-  if (e.target.id !== 'pinTotalInput') return;
-  const v = parseNum(e.target.value); draft.pinTotal = v == null || isNaN(v) ? null : Math.round(v * 100) / 100; saveDraft();
-  const box = $('pinResultBox'); if (box) box.innerHTML = pinResultHtml();
-});
-function savePin() {
-  const d = draft, t = findBill(pinTarget);
-  if (!t) { showToast('Kies eerst een bon om mee te vergelijken'); return; }
-  if (typeof d.pinTotal !== 'number') { showToast('Vul het bedrag van de pinbon in'); return; }
-  const pid = d.sources[0] && d.sources[0].photoId;
-  t.pinCheck = { amount: d.pinTotal, date: d.date || '', photoId: pid || null };
-  if (pid) { t.extraPhotos = (t.extraPhotos || []).concat([pid]); }
-  t.updated = Date.now(); saveBills();
-  const ok = cents(t.pinCheck.amount) === billTotalCents(t);
-  draft = null;
-  if (queue.length) { nextFromQueue(); } else { saveDraft(); openBill(t.id); }
-  showToast(ok ? '💳 Pinbon klopt' : '💳 Pinbon wijkt af', 2500);
-}
-// ---------- Regels bewerken ----------
-function lineOf(el) { const box = el.closest('[data-ln]'); if (!box || !draft) return null; const id = box.getAttribute('data-ln'); return { box: box, l: draft.lines.find(x => x.id === id) }; }
+function pinAsReceipt(i) { const d = batch[i || 0]; if (!d) return; d.isPin = false; d.pins = []; ensureBlankLine(d); saveDraft(); renderEdit(); }
+function rerenderSec(i) { const el = $('sec_' + i); if (!el) return renderEdit(); const tmp = document.createElement('div'); tmp.innerHTML = secHtml(batch[i], i); el.replaceWith(tmp.firstChild); if (!batch[i].isPin) renderLines(i); }
+// ---------- Alles op het scherm: klikken en typen ----------
+function lineOf(el) { const i = secIndex(el), d = batch[i], box = el.closest('[data-ln]'); if (!box || !d) return null; const id = box.getAttribute('data-ln'); return { i: i, d: d, box: box, l: d.lines.find(x => x.id === id) }; }
 function refreshLineBox(box, l) {
-  const f = calcFlag(l), c = compareFor(l);
+  const f = calcFlag(l);
   const fe = box.querySelector('.ln-flag'); fe.classList.toggle('hidden', !f); fe.textContent = f ? '⚠ ' + f + ' Pas aan als het niet klopt.' : '';
-  const ce = box.querySelector('.ln-cmp'); ce.classList.toggle('hidden', !c); ce.textContent = cmpText(c);
   box.classList.toggle('blank', lineIsBlank(l));
 }
-function afterLineChange(box, l) {
-  refreshLineBox(box, l);
-  const ls = draft.lines;
-  if (ls[ls.length - 1] === l && !lineIsBlank(l)) { // altijd een lege regel onderaan
+function afterLineChange(o) {
+  refreshLineBox(o.box, o.l);
+  const ls = o.d.lines;
+  if (ls[ls.length - 1] === o.l && !lineIsBlank(o.l)) { // altijd een lege regel onderaan
     const nl = newLine(); ls.push(nl);
-    box.querySelector('[data-f=name]').placeholder = 'Omschrijving';
-    $('edLines').insertAdjacentHTML('beforeend', lineHtml(nl, true));
+    o.box.querySelector('[data-f=name]').placeholder = 'Omschrijving';
+    $(sid('edLines', o.i)).insertAdjacentHTML('beforeend', lineHtml(nl, true));
   }
-  updateEditTotalsOnly(); saveDraft();
+  updateEditTotalsOnly(o.i); saveDraft();
 }
-$('edLines').addEventListener('input', e => {
-  const t = e.target, f = t.getAttribute('data-f'); const o = lineOf(t); if (!o || !o.l) return;
+$('editBills').addEventListener('input', e => {
+  const t = e.target, i = secIndex(t), d = batch[i]; if (!d) return;
+  const fld = t.getAttribute('data-fld');
+  if (fld) {
+    if (fld === 'supplier') { d.supplier = t.value; saveDraft(); return; }
+    if (fld === 'date') { d.date = t.value; saveDraft(); return; }
+    const v = parseNum(t.value); if (v !== null && isNaN(v)) return;
+    const r2 = v == null ? null : Math.round(v * 100) / 100;
+    if (fld === 'rounding') d.rounding = r2 || 0;
+    else if (fld === 'receiptTotal') d.receiptTotal = r2;
+    else if (fld === 'pin') { const k = Number(t.closest('[data-pk]').getAttribute('data-pk')); d.pins[k].amount = r2; }
+    else if (fld === 'pinTotal') { d.pinTotal = r2; saveDraft(); const box = t.closest('.pin-panel').querySelector('.pin-res-box'); if (box) box.innerHTML = pinResultHtml(d); return; }
+    updateEditTotalsOnly(i); saveDraft(); return;
+  }
+  const f = t.getAttribute('data-f'); const o = lineOf(t); if (!o || !o.l) return;
   const l = o.l, v = parseNum(t.value);
-  if (f === 'name') l.name = t.value;
+  if (f === 'name') { l.name = t.value.replace(/\n/g, ' '); if (t.value !== l.name) t.value = l.name; fitName(t); }
   else if (f === 'qty' || f === 'price') {
     if (v !== null && isNaN(v)) return;
     if (f === 'qty') l.qty = v; else l.unitPrice = v == null ? null : Math.round(v * 10000) / 10000;
@@ -952,72 +1031,97 @@ $('edLines').addEventListener('input', e => {
     if (v !== null && isNaN(v)) return;
     l.total = v == null ? null : Math.round(v * 100) / 100;
     if (l.total != null && l.unitPrice == null) { l.unitPrice = Math.round(l.total / (l.qty || 1) * 100) / 100; o.box.querySelector('[data-f=price]').value = numStr(l.unitPrice, 2); }
-  } else if (f === 'pkg') {
-    if (v !== null && isNaN(v)) return;
-    l.pkgSize = v;
-    if (v && !l.pkgUnit) { l.pkgUnit = 'g'; o.box.querySelector('[data-pku=g]').classList.add('on'); }
   }
-  refreshCmp(l); afterLineChange(o.box, l);
+  refreshCmp(l); afterLineChange(o);
 });
-$('edLines').addEventListener('click', e => {
+$('editBills').addEventListener('change', e => { const t = e.target; if (t.getAttribute('data-fld') === 'date') { const d = batch[secIndex(t)]; if (d) { d.date = t.value; saveDraft(); } } });
+$('editBills').addEventListener('click', e => {
+  const i = secIndex(e.target), d = batch[i]; if (!d) return;
+  const th = e.target.closest('[data-thumb]'); if (th) { openViewerSrc(secImgs(d), Number(th.getAttribute('data-thumb'))); return; }
+  const pb = e.target.closest('[data-pinbill]'); if (pb) { d.pinTarget = pb.getAttribute('data-pinbill'); saveDraft(); $(sid('pinPanel', i)).innerHTML = pinPanelHtml(d); return; }
+  if (e.target.closest('[data-pinasbon]')) { pinAsReceipt(i); return; }
+  const pa = e.target.closest('[data-pinattach]'); if (pa) { attachPinTo(i, Number(pa.getAttribute('data-pinattach'))); return; }
+  const po = e.target.closest('[data-pinoff]'); if (po) { detachPin(i, Number(po.getAttribute('data-pinoff'))); return; }
+  if (e.target.closest('[data-addline]')) { addLine(true, i); return; }
+  if (e.target.closest('[data-whole]')) { readWhole(i); return; }
+  if (e.target.closest('[data-dropsec]')) { dropSection(i); return; }
   const u = e.target.closest('[data-unit]');
   if (u) {
     const o = lineOf(u); if (!o || !o.l) return; o.l.unit = u.getAttribute('data-unit');
     o.box.querySelectorAll('[data-unit]').forEach(b => b.classList.toggle('on', b === u));
-    const kg = o.l.unit === 'kg'; o.box.querySelector('[data-lbl=qty]').textContent = kg ? 'Gewicht kg' : 'Aantal'; o.box.querySelector('[data-lbl=price]').textContent = kg ? 'Prijs/kg €' : 'Prijs/stuk €';
-    refreshCmp(o.l); afterLineChange(o.box, o.l); return;
+    const kg = o.l.unit === 'kg'; o.box.querySelector('[data-lbl=qty]').textContent = kg ? 'Gewicht kg' : 'Aantal'; o.box.querySelector('[data-lbl=price]').textContent = kg ? 'Prijs/kg €' : 'Prijs €';
+    refreshCmp(o.l); afterLineChange(o); return;
   }
-  const p = e.target.closest('[data-pku]');
-  if (p) {
-    const o = lineOf(p); if (!o || !o.l) return; const k = p.getAttribute('data-pku'); o.l.pkgUnit = o.l.pkgUnit === k ? null : k;
-    o.box.querySelectorAll('[data-pku]').forEach(b => b.classList.toggle('on', b.getAttribute('data-pku') === o.l.pkgUnit));
-    refreshCmp(o.l); afterLineChange(o.box, o.l); return;
-  }
-  const d = e.target.closest('[data-delln]');
-  if (d) {
-    const id = d.getAttribute('data-delln'), idx = draft.lines.findIndex(x => x.id === id); if (idx < 0) return;
-    const l = draft.lines[idx];
-    if (lineIsBlank(l) && idx === draft.lines.length - 1) { showToast('Dit is de lege regel om in te vullen'); return; }
-    draft.lines.splice(idx, 1); ensureBlankLine(draft); renderLines(); saveDraft();
-    if (!lineIsBlank(l)) showUndo('Regel “' + (l.name || 'zonder naam') + '” gewist', () => { if (!draft) return; draft.lines.splice(Math.min(idx, draft.lines.length), 0, l); renderLines(); saveDraft(); showToast('Regel teruggezet'); }, null, 6000);
+  const del = e.target.closest('[data-delln]');
+  if (del) {
+    const id = del.getAttribute('data-delln'), idx = d.lines.findIndex(x => x.id === id); if (idx < 0) return;
+    const l = d.lines[idx];
+    if (lineIsBlank(l) && idx === d.lines.length - 1) { showToast('Dit is de lege regel om in te vullen'); return; }
+    d.lines.splice(idx, 1); ensureBlankLine(d); renderLines(i); saveDraft();
+    if (!lineIsBlank(l)) showUndo('Regel “' + (l.name || 'zonder naam') + '” gewist', () => { if (batch.indexOf(d) < 0) return; const j = batch.indexOf(d); d.lines.splice(Math.min(idx, d.lines.length), 0, l); renderLines(j); saveDraft(); showToast('Regel teruggezet'); }, null, 6000);
   }
 });
-$('edTotals').addEventListener('input', e => {
-  const v = parseNum(e.target.value); if (v !== null && isNaN(v)) return;
-  if (e.target.id === 'edRounding') draft.rounding = v == null ? 0 : Math.round(v * 100) / 100;
-  else if (e.target.id === 'edReceiptTotal') draft.receiptTotal = v == null ? null : Math.round(v * 100) / 100;
-  updateEditTotalsOnly(); saveDraft();
-});
-$('edSupplier').addEventListener('input', () => { if (draft) { draft.supplier = $('edSupplier').value; saveDraft(); } });
-$('edDate').addEventListener('change', () => { if (draft) { draft.date = $('edDate').value; saveDraft(); } });
-function addLine(focus) {
-  ensureBlankLine(draft);
-  let last = draft.lines[draft.lines.length - 1];
-  if (!document.querySelector('[data-ln="' + last.id + '"]')) renderLines();
+function addLine(focus, i) {
+  i = i || 0; const d = batch[i]; if (!d) return;
+  ensureBlankLine(d);
+  const last = d.lines[d.lines.length - 1];
+  if (!document.querySelector('[data-ln="' + last.id + '"]')) renderLines(i);
   const el = document.querySelector('[data-ln="' + last.id + '"] [data-f=name]');
   if (focus && el) { el.focus(); el.scrollIntoView({ block: 'center' }); }
 }
+// pinbon losmaken: wordt een eigen blok op dit scherm (vergelijken met een bewaarde bon)
+function detachPin(i, k) {
+  const d = batch[i], p = d.pins.splice(k, 1)[0]; if (!p) return;
+  const pd = baseDraft('foto', p.photoId); pd.isPin = true; pd.pinTotal = p.amount; pd.date = p.date || ''; pd.time = p.time || ''; pd.supplier = d.supplier; pd.img = p.img || null; pd.imgs = p.img ? [p.img] : []; pd.pinCands = p.cands || null; if (p.fullPhotoId) pd.fullPhotoId = p.fullPhotoId;
+  batch.push(pd); saveDraft(); renderEdit();
+}
+function attachPinTo(i, j) {
+  const p = batch[i], t = batch[j]; if (!p || !t || !p.isPin) return;
+  t.pins = (t.pins || []).concat([{ amount: p.pinTotal, date: p.date || '', time: p.time || '', photoId: (p.sources[0] && p.sources[0].photoId) || null, fullPhotoId: p.fullPhotoId || null, img: (p.imgs && p.imgs[0]) || p.img || null, cands: p.pinCands || null }]);
+  batch.splice(i, 1); setBatch(batch); saveDraft(); renderEdit();
+}
+function dropSection(i) {
+  const d = batch[i]; if (!d) return;
+  batch.splice(i, 1); setBatch(batch);
+  const ids = srcPhotoIds(d.sources).concat((d.pins || []).map(p => p.photoId).filter(Boolean));
+  batchRaw = batchRaw.filter(x => !srcPhotoIds(x.sources).some(id => ids.indexOf(id) >= 0));
+  if (!batch.length) { batchRaw = []; saveDraft(); showTab('bonnen'); purgePhotos(ids); return; }
+  saveDraft(); renderEdit(); purgePhotos(ids); showToast(d.isPin ? 'Pinbon weggelaten' : 'Bon weggelaten');
+}
 // ---------- Bewaren + automatisch samenvoegen ----------
 function billKey(b) { return normSupplier(b.supplier) + '|' + (b.date || ''); }
-function newBillFrom(d, src, keepApart) {
-  const b = { id: uid('b'), supplier: d.supplier, date: d.date, time: d.time || '', lines: d.lines, rounding: d.rounding || 0, receiptTotal: typeof d.receiptTotal === 'number' ? d.receiptTotal : null, sources: [src], created: Date.now(), updated: Date.now() };
+function newBillFrom(d, srcs, keepApart) {
+  const b = { id: uid('b'), supplier: d.supplier, date: d.date, time: d.time || '', lines: d.lines, rounding: d.rounding || 0, receiptTotal: typeof d.receiptTotal === 'number' ? d.receiptTotal : null, sources: srcs, created: Date.now(), updated: Date.now() };
   if (keepApart) b.keepApart = true;
   return b;
 }
-function saveEdit() {
-  if (!draft) return;
-  if (draft.isPin) return savePin();
-  draft.supplier = $('edSupplier').value.trim(); draft.date = $('edDate').value || '';
-  const d = draft;
-  cleanLines(d);
-  if (!d.isNew) {
-    const b = findBill(d.billId);
-    if (b) { b.supplier = d.supplier; b.date = d.date; b.lines = d.lines; b.rounding = d.rounding || 0; b.receiptTotal = typeof d.receiptTotal === 'number' ? d.receiptTotal : null; b.updated = Date.now(); saveBills(); }
-    draft = null; saveDraft(); openBill(d.billId); showToast('Bewaard'); return;
+// bronnen van een (op dit scherm al samengevoegde) bon netjes maken: welke regels, welk totaal, welke afronding
+function draftSources(d) {
+  const ids = d.lines.map(l => l.id), srcs = (d.sources && d.sources.length ? d.sources : [{ id: uid('s'), kind: 'hand' }]).map(s => Object.assign({}, s));
+  if (srcs.length === 1) { srcs[0].lineIds = ids; srcs[0].total = typeof d.receiptTotal === 'number' ? d.receiptTotal : null; srcs[0].rounding = d.rounding || 0; }
+  else {
+    const used = new Set();
+    srcs.forEach(s => { s.lineIds = (s.lineIds || []).filter(id => ids.indexOf(id) >= 0); s.lineIds.forEach(id => used.add(id)); });
+    const last = srcs[srcs.length - 1]; ids.forEach(id => { if (!used.has(id)) last.lineIds.push(id); });
+    const rest = srcs.slice(0, -1);
+    if (typeof d.receiptTotal === 'number' && rest.every(s => typeof s.total === 'number')) last.total = Math.round((d.receiptTotal - rest.reduce((a, s) => a + s.total, 0)) * 100) / 100;
+    else if (typeof d.receiptTotal !== 'number') srcs.forEach(s => { s.total = null; });
+    last.rounding = Math.round(((d.rounding || 0) - rest.reduce((a, s) => a + (s.rounding || 0), 0)) * 100) / 100;
   }
-  if (!d.lines.length && !d.supplier) { showToast('Vul eerst een winkel of een regel in'); ensureBlankLine(d); return; }
-  const src = Object.assign({ id: uid('s'), kind: 'hand' }, d.sources[0] || {});
-  src.lineIds = d.lines.map(l => l.id); src.total = typeof d.receiptTotal === 'number' ? d.receiptTotal : null; src.rounding = d.rounding || 0; src.addedAt = Date.now();
+  srcs.forEach(s => { s.addedAt = Date.now(); if (!s.id) s.id = uid('s'); });
+  return srcs;
+}
+function attachPins(t, d) {
+  (d.pins || []).forEach(p => {
+    if (typeof p.amount !== 'number') return;
+    t.pinCheck = { amount: p.amount, date: p.date || '', photoId: p.photoId || null };
+    if (p.photoId) t.extraPhotos = (t.extraPhotos || []).concat([p.photoId]);
+    if (p.fullPhotoId && p.fullPhotoId !== p.photoId) t.extraPhotos = t.extraPhotos.concat([p.fullPhotoId]);
+  });
+}
+// één nieuwe bon bewaren; geeft { id, undo } terug
+function saveNewBill(d) {
+  const srcs = draftSources(d);
   const target = d.supplier && d.date ? sortedBills().find(b => !b.keepApart && billKey(b) === billKey(d)) : null;
   if (target) {
     const before = JSON.parse(JSON.stringify(target));
@@ -1025,38 +1129,72 @@ function saveEdit() {
     target.lines = (target.lines || []).concat(d.lines);
     target.rounding = Math.round(((target.rounding || 0) + (d.rounding || 0)) * 100) / 100;
     target.receiptTotal = typeof target.receiptTotal === 'number' && typeof d.receiptTotal === 'number' ? Math.round((target.receiptTotal + d.receiptTotal) * 100) / 100 : null;
-    target.sources.push(src); target.updated = Date.now();
-    saveBills();
+    target.sources = target.sources.concat(srcs); target.updated = Date.now();
+    attachPins(target, d);
     const id = target.id;
-    const msg = 'Samengevoegd met de bon van ' + target.supplier + ' van ' + dateLabel(target.date, false) + ' (nu ' + target.sources.length + ' bonnen)';
-    finishSave(id, msg, () => {
+    return { id: id, msg: 'Samengevoegd met de bon van ' + target.supplier + ' van ' + dateLabel(target.date, false) + ' (nu ' + target.sources.length + ' bonnen)', undo: () => {
       const t = findBill(id); if (!t) return;
       Object.keys(t).forEach(k => delete t[k]); Object.assign(t, before);
-      const nb = newBillFrom(d, src, true); bills.push(nb); saveBills();
+      const nb = newBillFrom(d, srcs, true); attachPins(nb, d); bills.push(nb); saveBills();
       if (curTab === 'bon') openBill(viewBillId === id ? nb.id : viewBillId); else if (curTab === 'bonnen') renderList();
       showToast('Weer apart gezet');
-    });
-  } else {
-    const nb = newBillFrom(d, src, false); bills.push(nb); saveBills();
-    finishSave(nb.id, 'Bon bewaard', null);
+    } };
   }
+  const nb = newBillFrom(d, srcs, false); attachPins(nb, d); bills.push(nb);
+  return { id: nb.id, msg: srcs.length > 1 ? 'Bon bewaard (samengevoegd uit ' + srcs.length + ' bonnen)' : 'Bon bewaard', undo: null };
 }
-function finishSave(id, msg, undoMerge) {
-  draft = null;
-  if (queue.length) nextFromQueue(); else { saveDraft(); openBill(id); }
-  if (undoMerge) showUndo(msg, undoMerge, null, 10000); else showToast(msg);
+function saveEdit() {
+  if (!batch.length) return;
+  const d0 = draft;
+  if (!d0.isNew) {
+    cleanLines(d0);
+    const b = findBill(d0.billId);
+    if (b) { b.supplier = (d0.supplier || '').trim(); b.date = d0.date || ''; b.lines = d0.lines; b.rounding = d0.rounding || 0; b.receiptTotal = typeof d0.receiptTotal === 'number' ? d0.receiptTotal : null; b.updated = Date.now(); saveBills(); }
+    batchRaw = []; setBatch([]); saveDraft(); openBill(d0.billId); showToast('Bewaard'); return;
+  }
+  // eerst alles nakijken, pas daarna bewaren
+  for (let i = 0; i < batch.length; i++) {
+    const d = batch[i];
+    if (d.isPin) {
+      if (!findBill(d.pinTarget)) { showToast('Kies eerst een bon om de pinbon mee te vergelijken'); $('sec_' + i).scrollIntoView({ block: 'start' }); return; }
+      if (typeof d.pinTotal !== 'number') { showToast('Vul het bedrag van de pinbon in'); return; }
+      continue;
+    }
+    d.supplier = (d.supplier || '').trim();
+    if (!d.lines.some(l => !lineIsBlank(l)) && !d.supplier) { showToast('Vul eerst een winkel of een regel in'); $('sec_' + i).scrollIntoView({ block: 'start' }); return; }
+  }
+  const results = [];
+  batch.filter(d => !d.isPin).forEach(d => { cleanLines(d); results.push(saveNewBill(d)); });
+  batch.filter(d => d.isPin).forEach(d => {
+    const t = findBill(d.pinTarget), pid = d.sources[0] && d.sources[0].photoId;
+    t.pinCheck = { amount: d.pinTotal, date: d.date || '', photoId: pid || null };
+    if (pid) t.extraPhotos = (t.extraPhotos || []).concat([pid]);
+    t.updated = Date.now();
+    results.push({ id: t.id, msg: cents(d.pinTotal) === billTotalCents(t) ? '💳 Pinbon klopt' : '💳 Pinbon wijkt af', undo: null, pin: true });
+  });
+  saveBills();
+  batchRaw = []; setBatch([]); saveDraft();
+  const ids = results.map(r => r.id).filter((x, k, a) => a.indexOf(x) === k);
+  if (ids.length === 1) {
+    openBill(ids[0]);
+    const r = results.find(x => x.undo) || results[0];
+    if (r.undo) showUndo(r.msg, r.undo, null, 10000); else showToast(results.length > 1 && results.some(x => x.pin) && !r.pin ? r.msg + ' ' + results.find(x => x.pin).msg : r.msg, 2500);
+  } else { showTab('bonnen'); showToast(ids.length + ' bonnen bewaard', 2500); }
 }
 function cancelEdit() {
-  const d = draft; draft = null;
+  const d = draft;
   if (d && d.isNew) {
-    const ids = srcPhotoIds(d.sources);
-    if (queue.length) nextFromQueue(); else { saveDraft(); showTab('bonnen'); }
-    purgePhotos(ids); return;
+    const go = () => {
+      const ids = []; batch.concat(batchRaw).forEach(x => { srcPhotoIds(x.sources).forEach(id => ids.push(id)); if (x.fullPhotoId) ids.push(x.fullPhotoId); (x.pins || []).forEach(p => { if (p.photoId) ids.push(p.photoId); if (p.fullPhotoId) ids.push(p.fullPhotoId); }); });
+      batchRaw = []; setBatch([]); saveDraft(); showTab('bonnen'); purgePhotos(ids);
+    };
+    if (batch.length > 1) askBig('Alles weggooien?', { sub: 'De gelezen bonnen worden niet bewaard.', yes: 'Ja, weggooien', no: 'Nee, terug' }).then(y => { if (y) go(); });
+    else go();
+    return;
   }
-  saveDraft();
+  setBatch([]); saveDraft();
   if (d && d.billId) openBill(d.billId); else showTab('bonnen');
 }
-function nextFromQueue() { draft = queue.shift(); pinTarget = null; if (!draft.isPin) ensureBlankLine(draft); saveDraft(); renderEdit(); showTab('edit'); }
 // Splits weer: de laatst toegevoegde bon wordt weer een aparte bon
 function splitBill(id) {
   const b = findBill(id); if (!b || !b.sources || b.sources.length < 2) return;
@@ -1077,7 +1215,7 @@ function openViewer(billId) {
   const b = findBill(billId); if (!b) return;
   Promise.all(billPhotoIds(b).map(getPhoto)).then(ps => { const srcs = ps.filter(Boolean).map(p => p.data); if (!srcs.length) { showToast('Foto niet gevonden'); return; } openViewerSrc(srcs); });
 }
-function openViewerSrc(srcs) { viewerList = srcs; viewerIdx = 0; showViewerImg(); $('viewer').classList.remove('hidden'); }
+function openViewerSrc(srcs, idx) { viewerList = srcs; viewerIdx = Math.max(0, Math.min(srcs.length - 1, idx || 0)); showViewerImg(); $('viewer').classList.remove('hidden'); }
 function showViewerImg() {
   $('viewerImg').src = viewerList[viewerIdx];
   $('viewerNav').innerHTML = viewerList.length > 1 ? '<button class="big-button secondary" onclick="stepViewer(-1)">← Vorige</button><button class="big-button secondary" onclick="stepViewer(1)">Volgende →</button>' : '';
@@ -1177,7 +1315,8 @@ function findSlips(img) {
   let segs = merged.filter(r => r[1] - r[0] >= W * 0.1);
   const maxInk = Math.max.apply(null, segs.map(inkOf).concat([1]));
   segs = segs.filter(r => inkOf(r) >= maxInk * 0.15);
-  if (segs.length < 2 || segs.length > 6) return null;
+  if (!segs.length || segs.length > 6) return null;
+  // ook bij één bon: alleen het tekstblok lezen (grote witte randen maken het lezen veel slechter)
   return segs.map(r => {
     // rijen met tekst; neem het grootste aaneengesloten blok (losse vlekken boven/onder vallen weg)
     const segW = r[1] - r[0], rowThr = Math.max(2, segW * 0.02), rows = [];
@@ -1190,13 +1329,25 @@ function findSlips(img) {
     return { x: x0 / s, y: y0 / s, w: (x1 - x0) / s, h: (y1 - y0) / s };
   });
 }
-// variant: [doelbreedte, contrast, straal-deler]
-const OCR_VARIANTS = [[1600, 4, 25, '6'], [1060, 5, 60, '6'], [1060, 5, 25, '4']];
+// Manieren van lezen. w = breedte van het tekstblok in pixels, sy = hoogte samendrukken.
+// Kassabonnen hebben vaak een hoge, smalle letter; door de hoogte ongeveer te halveren leest Tesseract die veel beter.
+// enh = [contrast, straal-deler] voor vage bonnen; psm = Tesseract-indeling (6 = één blok, 4 = kolommen).
+const OCR_VARIANTS = [
+  { w: 1100, sy: 0.5, psm: '6' }, { w: 1100, sy: 0.45, psm: '4' }, { w: 1300, sy: 0.55, psm: '6' }, { w: 900, sy: 0.55, psm: '4' },
+  { w: 1600, sy: 1, enh: [4, 25], psm: '6' }, { w: 1060, sy: 0.6, enh: [5, 60], psm: '6' }
+];
+const OCR_MIN_PASSES = 4; // na deze lezingen stoppen als alles klopt
 function ocrCanvasFor(img, r, v) {
   v = v || OCR_VARIANTS[0];
-  let scale = Math.min(4, Math.max(0.4, v[0] / r.w));
-  if (r.w * scale * r.h * scale > 12000000) scale = Math.sqrt(12000000 / (r.w * r.h));
-  return enhance(drawScaled(img, r.x, r.y, r.w, r.h, scale), v[1], v[2]);
+  let scale = Math.min(4, Math.max(0.3, v.w / r.w));
+  const sy = v.sy || 1;
+  if (r.w * scale * r.h * scale * sy > 12000000) scale = Math.sqrt(12000000 / (r.w * r.h * sy));
+  const c = document.createElement('canvas');
+  c.width = Math.max(1, Math.round(r.w * scale)); c.height = Math.max(1, Math.round(r.h * scale * sy));
+  const ctx = c.getContext('2d'); ctx.imageSmoothingEnabled = true; if ('imageSmoothingQuality' in ctx) ctx.imageSmoothingQuality = 'high';
+  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
+  ctx.drawImage(img, r.x, r.y, r.w, r.h, 0, 0, c.width, c.height);
+  return v.enh ? enhance(c, v.enh[0], v.enh[1]) : c;
 }
 function parsedSumCents(p) { return p.lines.reduce((a, l) => a + cents(l.total), 0) + cents(p.rounding); }
 function scoreParse(p) {
@@ -1206,31 +1357,80 @@ function scoreParse(p) {
   if (p.isPin) s += 8;
   return s;
 }
-// Meer manieren van lezen (andere vergroting/contrast, Tesseract psm 6 en 4); de beste uitkomst telt.
-// Klopt de som van de regels al met het totaal (of is het een pinbon), dan stoppen we eerder.
-function goodEnough(p) { return (p.isPin && p.pinCands && p.pinCands.length >= 3) || (p.total != null && p.lines.length && parsedSumCents(p) === cents(p.total)); }
+// Meer manieren van lezen; daarna de lezingen combineren: per gegeven (datum, totaal, afronding) wint wat het vaakst
+// gelezen is, en per regel (zelfde regeltotaal) wint de duidelijkste naam en een aantal × prijs dat klopt.
+function voteVal(vals, keyFn) {
+  const cnt = new Map(); vals.forEach(v => { const k = keyFn ? keyFn(v) : v; cnt.set(k, (cnt.get(k) || { n: 0, v: v })); cnt.get(k).n++; });
+  let best = null; cnt.forEach(e => { if (!best || e.n > best.n) best = e; }); return best ? best.v : null;
+}
+function lineOk(l) { return l.qty != null && l.unitPrice != null && l.total != null && Math.abs(Math.round(l.qty * l.unitPrice * 100) - Math.round(l.total * 100)) <= 1; }
+function combineParses(ps) {
+  const all = ps.filter(Boolean); if (!all.length) return null;
+  const pinVotes = all.filter(p => p.isPin).length, isPin = pinVotes > 0 && !all.some(p => !p.isPin && parsedSumOk(p));
+  const pool = all.filter(p => !!p.isPin === isPin);
+  const tomorrow = dateIso(new Date(Date.now() + 864e5));
+  const out = JSON.parse(JSON.stringify(pool.slice().sort((a, b) => b.score - a.score)[0]));
+  const dates = pool.map(p => p.date).filter(d => d && d <= tomorrow);
+  if (dates.length) { out.date = voteVal(dates); const t = pool.filter(p => p.date === out.date && p.time).map(p => p.time); out.time = t.length ? voteVal(t) : (out.time || ''); }
+  else if (out.date > tomorrow) out.date = '';
+  const sups = pool.map(p => p.supplier).filter(Boolean); if (sups.length) { const k = ReceiptParser.simplify(voteVal(sups, x => ReceiptParser.simplify(x))); const same = sups.filter(x => ReceiptParser.simplify(x) === k), whole = same.filter(x => !/(^|\s)\S{1,3}(\s|$)/.test(x)); out.supplier = voteVal(whole.length ? whole : same); }
+  if (isPin) {
+    const pt = pool.map(p => p.pinTotal).filter(x => x != null); if (pt.length) out.pinTotal = voteVal(pt, cents);
+    out.pinCands = pt; out.lines = [];
+    out.score = scoreParse(out); return out;
+  }
+  const tots = pool.map(p => p.total).filter(x => x != null); if (tots.length) out.total = voteVal(tots, cents);
+  // regels: neem per lezing de regels en zoek dezelfde regel (zelfde totaal) in de andere lezingen
+  const rnds = pool.map(p => p.rounding || 0);
+  const pickLines = base => base.lines.map((l, i) => {
+    const same = [];
+    pool.forEach(p => { const m = p.lines.filter(x => cents(x.total) === cents(l.total)); if (m.length) same.push(m.length === 1 ? m[0] : m[Math.min(m.length - 1, m.filter((x, j) => j < i).length)]); });
+    const named = same.filter(x => x.name).map(x => ({ x: x, s: ReceiptParser.nameScore(ReceiptParser.fixName(x.name)) }));
+    const nl = Object.assign({}, l);
+    if (named.length) { named.sort((a, b) => b.s - a.s || b.x.name.length - a.x.name.length); nl.name = named[0].x.name; }
+    const okOnes = same.filter(lineOk);
+    if (!lineOk(nl) && okOnes.length) { const k = voteVal(okOnes, x => x.unit + '|' + x.qty + '|' + cents(x.unitPrice)); nl.qty = k.qty; nl.unit = k.unit; nl.unitPrice = k.unitPrice; }
+    else if (lineOk(nl) && okOnes.length) { const k = voteVal(okOnes, x => x.unit + '|' + x.qty + '|' + cents(x.unitPrice)); if (okOnes.filter(x => x.unit + '|' + x.qty + '|' + cents(x.unitPrice) === k.unit + '|' + k.qty + '|' + cents(k.unitPrice)).length > 1) { nl.qty = k.qty; nl.unit = k.unit; nl.unitPrice = k.unitPrice; } }
+    nl.name = ReceiptParser.fixName(nl.name || '');
+    if (lineOk(nl)) delete nl.flag; else if (nl.qty != null && nl.unitPrice != null) nl.flag = 'calc';
+    return nl;
+  });
+  // kies de lezing waarvan de regels samen (met afronding) het totaal geven; anders de beste
+  let bestSet = null;
+  pool.slice().sort((a, b) => b.score - a.score).forEach(p => {
+    const lines = pickLines(p), sum = lines.reduce((a, l) => a + cents(l.total), 0);
+    const rnd = out.total != null ? rnds.concat([0]).find(r => sum + cents(r) === cents(out.total)) : undefined;
+    const fit = rnd !== undefined;
+    const sc = (fit ? 1000 : 0) + lines.filter(lineOk).length * 10 + lines.length;
+    if (!bestSet || sc > bestSet.sc) bestSet = { sc: sc, lines: lines, rnd: fit ? rnd : voteVal(rnds, cents) };
+  });
+  out.lines = bestSet.lines; out.rounding = bestSet.rnd || 0;
+  out.score = scoreParse(out);
+  return out;
+}
+function parsedSumOk(p) { return p.total != null && p.lines.length && parsedSumCents(p) === cents(p.total); }
+function goodEnough(p) {
+  if (p.isPin) return p.pinCands && p.pinCands.length >= 2 && p.pinCands.every(c => cents(c) === cents(p.pinTotal)) && !!p.date;
+  return parsedSumOk(p) && !!p.date && p.lines.every(l => lineOk(l) && ReceiptParser.nameScore(l.name) >= 0.99);
+}
 function ocrRead(worker, source, known, onPass) {
-  let best = null;
+  const passes = [];
+  let comb = null;
   const variants = source.canvas ? [null] : OCR_VARIANTS;
   let chain = Promise.resolve();
   variants.forEach((v, i) => {
     chain = chain.then(() => {
-      if (best && goodEnough(best)) return;
+      if (comb && i >= OCR_MIN_PASSES && goodEnough(comb)) return;
+      if (comb && comb.isPin && i >= 2 && goodEnough(comb)) return;
       if (onPass) onPass(i, variants.length);
       const canvas = source.canvas ? source.canvas : ocrCanvasFor(source.img, source.r, v);
-      return worker.setParameters({ tessedit_pageseg_mode: v ? v[3] : '6' }).then(() => worker.recognize(canvas)).then(res => {
+      return worker.setParameters({ tessedit_pageseg_mode: v ? v.psm : '6' }).then(() => worker.recognize(canvas)).then(res => {
         const p = ReceiptParser.parse(res.data.text, known); p.raw = res.data.text; p.score = scoreParse(p);
-        const cands = (best && best.pinCands || []).concat(p.isPin && p.pinTotal != null ? [p.pinTotal] : []);
-        if (!best || p.score > best.score) best = p;
-        best.pinCands = cands;
-        if (best.isPin && cands.length) { // pinbedrag: het bedrag dat het vaakst gelezen is
-          const n = c => cands.filter(x => cents(x) === cents(c)).length;
-          best.pinTotal = cands.slice().sort((a, b) => n(b) - n(a))[0];
-        }
+        passes.push(p); comb = combineParses(passes); comb.raw = passes.map(x => x.raw).join('\n-----\n');
       });
     });
   });
-  return chain.then(() => best);
+  return chain.then(() => comb);
 }
 const OCR_STATUS = { 'loading tesseract core': 'Tekstherkenning laden…', 'initializing tesseract': 'Tekstherkenning starten…', 'loading language traineddata': 'Taalgegevens laden (Nederlands + Engels)…', 'loading language traineddata (from cache)': 'Taalgegevens laden…', 'initializing api': 'Voorbereiden…' };
 function setOcrUi(text, frac) { $('ocrBox').classList.remove('hidden'); $('ocrStatus').textContent = text; if (frac != null) $('ocrBar').style.width = Math.round(frac * 100) + '%'; }
@@ -1244,11 +1444,72 @@ function handleReceiptFiles(input) {
   files.forEach((f, i) => { chain = chain.then(() => (isPdfFile(f) ? readPdf(f, i, files.length) : readPhoto(f, i, files.length))).then(ds => { ds.forEach(d => drafts.push(d)); }).catch(err => { drafts.push(errorDraft(f, err)); }); });
   return chain.then(() => { busy = false; $('pickBtn').disabled = false; $('ocrBox').classList.add('hidden'); ocrProgress = null; startQueue(drafts); });
 }
+// Alle gelezen foto's samen op één scherm: zelfde winkel + zelfde dag = één bon; pinbon erbij als controle.
 function startQueue(drafts) {
   if (!drafts.length) return;
-  // gewone bonnen eerst, pinbonnen daarna (die controleren tegen de samengevoegde bon)
-  drafts = drafts.filter(d => !d.isPin).concat(drafts.filter(d => d.isPin));
-  queue = drafts; nextFromQueue();
+  batchRaw = drafts; setBatch(buildBatch(drafts));
+  batch.forEach(d => { if (!d.isPin) ensureBlankLine(d); });
+  saveDraft(); renderEdit(); showTab('edit');
+}
+function wholeName(n) { return /(^|\s)\S{1,3}(\s|$)/.test(n) ? 0 : 1; }
+function buildBatch(raw) {
+  const ds = JSON.parse(JSON.stringify(raw));
+  // 1. dezelfde winkel op meer foto's: één spelling (een al bewaarde naam gaat voor)
+  const saved = []; sortedBills().forEach(b => { if (b.supplier && saved.indexOf(b.supplier) < 0) saved.push(b.supplier); });
+  const groups = [];
+  ds.forEach(d => { if (!d.supplier) return; let g = groups.find(g => normSupplier(g.names[0]) === normSupplier(d.supplier) || ReceiptParser.matchKnown(d.supplier, [g.names[0]])); if (!g) groups.push(g = { names: [], ds: [] }); g.names.push(d.supplier); g.ds.push(d); });
+  groups.forEach(g => {
+    const known = saved.find(k => g.names.some(n => normSupplier(n) === normSupplier(k) || ReceiptParser.matchKnown(n, [k])));
+    const cnt = {}; g.names.forEach(n => { cnt[n] = (cnt[n] || 0) + 1; });
+    const best = known || Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a] || wholeName(b) - wholeName(a) || (/[a-z]/.test(b) ? 1 : 0) - (/[a-z]/.test(a) ? 1 : 0))[0];
+    g.ds.forEach(d => { d.supplier = best; });
+  });
+  if (groups.length === 1) ds.forEach(d => { if (!d.supplier) { d.supplier = groups[0].ds[0].supplier; d.notes = d.notes.filter(n => !/Winkel niet gevonden/.test(n[1])); } });
+  // 2. datum niet gelezen? neem die van een andere bon van dezelfde winkel
+  ds.forEach(d => {
+    if (d.dateFound) return;
+    const found = ds.filter(x => x.dateFound), o = found.find(x => normSupplier(x.supplier) === normSupplier(d.supplier)) || (new Set(found.map(x => x.date)).size === 1 ? found[0] : null);
+    if (o) { d.date = o.date; d.dateFound = true; d.notes = d.notes.filter(n => !/Datum niet gevonden/.test(n[1])); }
+  });
+  // 3. samenvoegen
+  const groupsB = [], pins = [];
+  ds.forEach(d => { if (d.isPin) { pins.push(d); return; } const key = d.supplier && d.date ? billKey(d) : null; const g = key && groupsB.find(x => x.key === key); if (g) g.ds.push(d); else groupsB.push({ key: key, ds: [d] }); });
+  const out = groupsB.map(g => mergeDrafts(g.ds));
+  // 4. pinbon bij de bon met hetzelfde bedrag / dezelfde dag
+  pins.forEach(p => {
+    const amts = (p.pinCands && p.pinCands.length ? p.pinCands : [p.pinTotal]).filter(x => x != null);
+    const cands = out.filter(b => !b.isPin && (!p.date || !b.date || b.date === p.date));
+    const t = cands.find(b => amts.some(x => cents(x) === billTotalCents(b))) || cands.find(b => p.supplier && normSupplier(b.supplier) === normSupplier(p.supplier)) || (cands.length === 1 ? cands[0] : null);
+    if (!t) { p.imgs = p.img ? [p.img] : []; delete p.img; out.push(p); return; }
+    const hit = amts.find(x => cents(x) === billTotalCents(t));
+    t.pins = (t.pins || []).concat([{ amount: hit != null ? hit : p.pinTotal, date: p.date || '', time: p.time || '', photoId: (p.sources[0] && p.sources[0].photoId) || null, fullPhotoId: p.fullPhotoId || null, img: p.img || null, cands: p.pinCands || null }]);
+  });
+  return out;
+}
+function mergeDrafts(ds) {
+  if (ds.length === 1) { const d = ds[0]; d.imgs = d.img ? [d.img] : []; delete d.img; return d; }
+  const m = baseDraft('foto', null); m.sources = []; m.imgs = []; m.lines = []; m.rounding = 0;
+  m.supplier = ds[0].supplier; m.date = ds[0].date; m.dateFound = ds.some(d => d.dateFound); m.time = ds.map(d => d.time).filter(Boolean).sort()[0] || '';
+  let allTot = true, tot = 0; const seen = {};
+  ds.forEach((d, k) => {
+    const ls = d.lines.filter(l => !lineIsBlank(l)); m.lines = m.lines.concat(ls);
+    const s = Object.assign({}, d.sources[0] || { id: uid('s'), kind: 'foto' }); s.lineIds = ls.map(l => l.id); s.total = typeof d.receiptTotal === 'number' ? d.receiptTotal : null; s.rounding = d.rounding || 0;
+    m.sources.push(s); if (d.img) m.imgs.push(d.img);
+    m.rounding += d.rounding || 0; if (typeof d.receiptTotal === 'number') tot += cents(d.receiptTotal); else allTot = false;
+    const who = typeof d.receiptTotal === 'number' ? 'Bij de bon van ' + euro(d.receiptTotal) + ': ' : 'Bij bon ' + (k + 1) + ': ';
+    d.notes.forEach(n => {
+      if (n[0] === 'info') return;
+      if (/Datum niet gevonden/.test(n[1]) && m.dateFound) return;
+      if (/Winkel niet gevonden/.test(n[1]) && m.supplier) return;
+      const t = (n[0] === 'bad' || n[0] === 'warn') && !/^⚠ Bij/.test(n[1]) ? who + n[1].charAt(0).toLowerCase() + n[1].slice(1) : n[1];
+      if (!seen[t]) { seen[t] = 1; m.notes.push([n[0], t]); }
+    });
+  });
+  m.rounding = Math.round(m.rounding * 100) / 100; m.receiptTotal = allTot ? tot / 100 : null;
+  const parts = m.sources.map(s => typeof s.total === 'number' ? euro(s.total).replace(' ', '&nbsp;') : '?').join(' + ');
+  m.notes.unshift(['info', 'Zelfde winkel, zelfde dag: ' + ds.length + ' bonnen samen als één bon (' + parts + ').']);
+  const sp = ds.find(d => d.fromSplit); if (sp) { m.fromSplit = true; m.fullPhotoId = sp.fullPhotoId; }
+  return m;
 }
 function baseDraft(kind, photoId) { return { isNew: true, supplier: '', date: '', lines: [], rounding: 0, receiptTotal: null, sources: [{ id: uid('s'), kind: kind, photoId: photoId || null }], notes: [] }; }
 function errorDraft(f, err) {
@@ -1267,7 +1528,6 @@ function draftFromParse(p, kind, photoId, extraNote) {
   if (extraNote) d.notes.push(['info', extraNote]);
   if (!p.isPin) {
     if (!p.lines.length) d.notes.push(['warn', 'Er zijn geen regels herkend. Vul ze hieronder zelf in, of maak een nieuwe foto: één bon per foto, recht van boven, goed licht.']);
-    else d.notes.push(['info', p.lines.length + (p.lines.length === 1 ? ' regel' : ' regels') + ' gelezen. Controleer alles met de foto en pas aan wat niet klopt.']);
     if (!p.supplier) d.notes.push(['warn', 'Winkel niet gevonden – vul de naam in.']);
     const flagged = p.lines.filter(l => l.flag).length;
     if (flagged) d.notes.push(['warn', '⚠ Bij ' + flagged + (flagged === 1 ? ' regel klopt' : ' regels klopt') + ' aantal × prijs niet met het regeltotaal. Het bedrag van de bon is aangehouden.']);
@@ -1308,8 +1568,9 @@ function readPhoto(file, i, n) {
   });
 }
 function readImageInto(img, fullId, fullData, lbl, allowSplit, lastMod) {
-  const slips = allowSplit ? findSlips(img) : null;
-  const regions = slips || [{ x: 0, y: 0, w: img.naturalWidth, h: img.naturalHeight }];
+  const found = findSlips(img);
+  let regions = found || [{ x: 0, y: 0, w: img.naturalWidth, h: img.naturalHeight }];
+  if (!allowSplit && regions.length > 1) { const x0 = Math.min.apply(null, regions.map(r => r.x)), y0 = Math.min.apply(null, regions.map(r => r.y)), x1 = Math.max.apply(null, regions.map(r => r.x + r.w)), y1 = Math.max.apply(null, regions.map(r => r.y + r.h)); regions = [{ x: x0, y: y0, w: x1 - x0, h: y1 - y0 }]; }
   const out = [];
   return getWorker().then(worker => {
     let chain = Promise.resolve();
@@ -1326,7 +1587,7 @@ function readImageInto(img, fullId, fullData, lbl, allowSplit, lastMod) {
             save = savePhoto({ id: photoId, date: new Date().toISOString(), data: data, kind: 'bon' });
           }
           return save.then(() => {
-            const d = draftFromParse(p, 'foto', photoId, regions.length > 1 ? 'Op de foto staan ' + regions.length + ' bonnen. Dit is bon ' + (k + 1) + ' van ' + regions.length + '.' : '');
+            const d = draftFromParse(p, 'foto', photoId, '');
             d.img = data; d.fullPhotoId = fullId; d.fromSplit = regions.length > 1; d.ocrText = p.raw;
             if (regions.length > 1) d.sources[0].fullPhotoId = fullId;
             out.push(d);
@@ -1338,18 +1599,17 @@ function readImageInto(img, fullId, fullData, lbl, allowSplit, lastMod) {
   });
 }
 // "Was dit één bon?" -> hele foto opnieuw lezen zonder te splitsen
-function readWhole() {
-  const d = draft; if (!d || !d.fullPhotoId || busy) return;
-  const fid = d.fullPhotoId, removed = [d].concat(queue.filter(q => q.fullPhotoId === fid));
-  queue = queue.filter(q => q.fullPhotoId !== fid); draft = null;
+function readWhole(i) {
+  const d = batch[i || 0]; if (!d || !d.fullPhotoId || busy) return;
+  const fid = d.fullPhotoId, removed = batchRaw.filter(x => x.fullPhotoId === fid);
   busy = true; showTab('nieuw');
   getPhoto(fid).then(ph => { if (!ph) throw new Error('foto niet gevonden'); return loadImage(ph.data).then(img => readImageInto(img, fid, ph.data, 'Hele foto', false)); })
     .then(ds => {
       busy = false; $('ocrBox').classList.add('hidden');
-      queue = ds.concat(queue); nextFromQueue();
-      purgePhotos(removed.map(x => x.sources[0].photoId).filter(id => id && id !== fid));
+      startQueue(batchRaw.filter(x => x.fullPhotoId !== fid).concat(ds));
+      purgePhotos(removed.map(x => x.sources[0] && x.sources[0].photoId).filter(id => id && id !== fid));
     })
-    .catch(() => { busy = false; $('ocrBox').classList.add('hidden'); showToast('Opnieuw lezen mislukt'); queue = removed.slice(1).concat(queue); draft = removed[0]; renderEdit(); showTab('edit'); });
+    .catch(() => { busy = false; $('ocrBox').classList.add('hidden'); showToast('Opnieuw lezen mislukt'); renderEdit(); showTab('edit'); });
 }
 // PDF: eerst de tekstlaag, anders de pagina tekenen en lezen met Tesseract
 function pdfLines(items) {
@@ -1397,6 +1657,7 @@ function textSizeIndex() { let s = 'groot'; try { s = localStorage.getItem(LS_TS
 function applyTextSize(i) {
   const cl = document.documentElement.classList; TEXT_SIZES.forEach(t => cl.remove('ts-' + t[0]));
   if (TEXT_SIZES[i][0] !== 'groot') cl.add('ts-' + TEXT_SIZES[i][0]);
+  document.querySelectorAll('textarea[data-f=name]').forEach(fitName);
   $('tsMinus').disabled = i === 0; $('tsPlus').disabled = i === TEXT_SIZES.length - 1;
 }
 function storeTextSize(i) { try { if (i === TS_NORMAL) localStorage.removeItem(LS_TS); else localStorage.setItem(LS_TS, TEXT_SIZES[i][0]); } catch (e) {} }
@@ -1444,12 +1705,12 @@ function importBackupFile(input) {
 }
 function clearAll() {
   askBig('Alle bonnen en foto\'s wissen?', { sub: 'Dit kan niet ongedaan worden gemaakt. Maak eventueel eerst een back-up.', yes: 'Ja, alles wissen', no: 'Nee, niets wissen' }).then(yes => {
-    if (!yes) return; hideUndo(); bills = []; draft = null; queue = []; saveBills(); saveDraft(); writePending([]); clearPhotos(); renderList(); showToast('Alles gewist');
+    if (!yes) return; hideUndo(); bills = []; batchRaw = []; setBatch([]); saveBills(); saveDraft(); writePending([]); clearPhotos(); renderList(); showToast('Alles gewist');
   });
 }
 
 // ---------- Versie en installeren ----------
-const APP_VERSION = '3';
+const APP_VERSION = '4';
 $('appVersion').textContent = APP_VERSION;
 function checkForUpdate() {
   if (!window.fetch || navigator.onLine === false || location.protocol.indexOf('http') !== 0) return;
@@ -1468,10 +1729,13 @@ function showInstallHint() { showTab('bonnen'); $('installHint').classList.remov
 
 // ---------- Start ----------
 (function () {
-  try { const s = JSON.parse(localStorage.getItem(LS_DRAFT) || 'null'); if (s && (s.draft || (s.queue && s.queue.length))) { draft = s.draft; queue = s.queue || []; } } catch (e) {}
+  try {
+    const s = JSON.parse(localStorage.getItem(LS_DRAFT) || 'null');
+    if (s && s.batch && s.batch.length) { batchRaw = s.raw || []; setBatch(s.batch); }
+    else if (s && (s.draft || (s.queue && s.queue.length))) { batchRaw = []; setBatch([s.draft].concat(s.queue || []).filter(Boolean)); } // oude versie
+  } catch (e) {}
   renderList();
-  if (draft) { if (!draft.isPin) ensureBlankLine(draft); renderEdit(); showTab('edit'); }
-  else if (queue.length) nextFromQueue();
+  if (draft) { batch.forEach(d => { if (!d.isPin) ensureBlankLine(d); }); renderEdit(); showTab('edit'); }
   const pend = readPending(); if (pend.length) purgePhotos(pend);
 })();
 </script>
